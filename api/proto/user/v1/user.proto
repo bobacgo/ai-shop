@@ -1,0 +1,332 @@
+edition = "2023";
+
+package user;
+option go_package = "./user/v1";
+
+// ==================== 用户服务 ====================
+service UserService {
+    rpc GetUserById (GetUserRequest) returns (UserResponse);
+    rpc CreateUser (CreateUserRequest) returns (UserResponse);
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+message GetUserRequest {
+    string id = 1;
+}
+
+message CreateUserRequest {
+    string username = 1;
+    string email = 2;
+    string phone = 3;
+    string password = 4;
+    int32 role = 5;
+}
+
+message UpdateUserRequest {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string phone = 4;
+}
+
+message DeleteUserRequest {
+    string id = 1;
+}
+
+message DeleteUserResponse {
+    bool success = 1;
+}
+
+message UserResponse {
+    User user = 1;
+}
+
+// ==================== 商户服务 ====================
+service MerchantService {
+    rpc GetMerchantById (GetMerchantRequest) returns (MerchantResponse);
+    rpc CreateMerchant (CreateMerchantRequest) returns (MerchantResponse);
+    rpc UpdateMerchant (UpdateMerchantRequest) returns (MerchantResponse);
+    rpc DeleteMerchant (DeleteMerchantRequest) returns (DeleteMerchantResponse);
+}
+
+message GetMerchantRequest {
+    string id = 1;
+}
+
+message CreateMerchantRequest {
+    string user_id = 1;
+    string store_name = 2;
+    string business_license = 3;
+}
+
+message UpdateMerchantRequest {
+    string id = 1;
+    string store_name = 2;
+    string business_license = 3;
+}
+
+message DeleteMerchantRequest {
+    string id = 1;
+}
+
+message DeleteMerchantResponse {
+    bool success = 1;
+}
+
+message MerchantResponse {
+    Merchant merchant = 1;
+}
+
+// ==================== 用户地址服务 ====================
+service AddressService {
+    rpc GetUserAddresses (GetUserAddressRequest) returns (UserAddressListResponse);
+    rpc CreateUserAddress (CreateUserAddressRequest) returns (UserAddressResponse);
+    rpc UpdateUserAddress (UpdateUserAddressRequest) returns (UserAddressResponse);
+    rpc DeleteUserAddress (DeleteUserAddressRequest) returns (DeleteUserAddressResponse);
+}
+
+message GetUserAddressRequest {
+    string user_id = 1;
+}
+
+message CreateUserAddressRequest {
+    string user_id = 1;
+    string recipient = 2;
+    string phone = 3;
+    string province = 4;
+    string city = 5;
+    string district = 6;
+    string detail = 7;
+}
+
+message UserAddressResponse {
+    string id = 1;
+    string user_id = 2;
+    string recipient = 3;
+    string phone = 4;
+    string province = 5;
+    string city = 6;
+    string district = 7;
+    string detail = 8;
+    string postal_code = 9;
+    bool is_default = 10;
+}
+
+message UpdateUserAddressRequest {
+    string id = 1;
+    string recipient = 2;
+    string phone = 3;
+    string province = 4;
+    string city = 5;
+    string district = 6;
+    string detail = 7;
+}
+
+message DeleteUserAddressRequest {
+    string id = 1;
+}
+
+message DeleteUserAddressResponse {
+    bool success = 1;
+}
+
+message UserAddressListResponse {
+    repeated UserAddress addresses = 1;
+}
+
+// ==================== 用户积分服务 ====================
+service PointService {
+    rpc GetUserPoints (GetUserPointsRequest) returns (UserPointsResponse);
+    rpc AddUserPoints (AddUserPointsRequest) returns (UserPointResponse);
+    rpc DeductUserPoints (DeductUserPointsRequest) returns (UserPointResponse);
+}
+
+message GetUserPointsRequest {
+    string user_id = 1;
+}
+
+message AddUserPointsRequest {
+    string user_id = 1;
+    int32 points = 2;
+}
+
+message DeductUserPointsRequest {
+    string user_id = 1;
+    int32 points = 2;
+}
+
+message UserPointsResponse {
+    repeated UserPoint points = 1;
+}
+
+message UserPointResponse {
+    UserPoint point = 1;
+}
+
+// ==================== 用户标签服务 ====================
+service TagService {
+    rpc GetUserTags (GetUserTagsRequest) returns (UserTagListResponse);
+    rpc AddUserTag (AddUserTagRequest) returns (UserTagResponse);
+    rpc RemoveUserTag (RemoveUserTagRequest) returns (UserTagResponse);
+}
+
+message GetUserTagsRequest {
+    string user_id = 1;
+}
+
+message AddUserTagRequest {
+    string user_id = 1;
+    string tag_id = 2;
+}
+
+message RemoveUserTagRequest {
+    string user_id = 1;
+    string tag_id = 2;
+}
+
+message UserTagListResponse {
+    repeated UserTag tags = 1;
+}
+
+message UserTagResponse {
+    UserTag tag = 1;
+}
+
+// 用户角色枚举
+enum Role {
+    // 未知
+    unknown = 0;
+    // 消费者
+    customer = 1;
+    // 商家
+    merchant = 2;
+    // 管理员
+    admin = 3;
+    // 超级管理员
+    superAdmin = 4;
+}
+
+// 用户状态枚举
+enum UserStatus {
+    // 未激活 用户未激活，不能登录或使用
+    inactive = 0;
+    // 正常 用户可以正常使用系统
+    active = 1;
+    // 已封禁 违反规则被封禁，不能登录或使用
+    banned = 2;
+    // 已注销 用户主动注销账号，但数据可能仍存在
+    deleted = 3;
+    // 冻结中 账户暂时被冻结，如风控原因
+    suspended = 4;
+}
+
+// 性别枚举
+enum Gender {
+    // 保密
+    secrecy = 0;
+    male = 1;
+    female = 2;
+}
+
+// 积分变动原因枚举
+enum PointReason {
+    // 购买
+    purchase = 0;
+    // 签到
+    sign_in = 1;
+    // 邀请
+    invite = 2;
+    // 退款
+    refund = 3;
+    // 管理员调整
+    admin_adjust = 4;
+    // 其他
+    other = 5;
+}
+
+// 审核状态枚举
+enum MerchantStatus {
+    // 待审核
+    pending = 0;
+    // 审核通过
+    approved = 1;
+    // 审核拒绝
+    rejected = 2;
+}
+
+// 用户基本信息
+message User {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string phone = 4;
+    Role role = 5;
+    UserStatus status = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+// 商户信息
+message Merchant {
+    string id = 1;
+    string user_id = 2;
+    string store_name = 3;
+    string business_license = 4;
+    MerchantStatus status = 5;
+    double balance = 6;
+    string created_at = 7;
+    string updated_at = 8;
+}
+
+// 用户详情
+message UserProfile {
+    string user_id = 1;
+    string full_name = 2;
+    Gender gender = 3;
+    string birth_date = 4;
+    string avatar_url = 5;
+    string created_at = 6;
+    string updated_at = 7;
+}
+
+// 用户地址
+message UserAddress {
+    string id = 1;
+    string user_id = 2;
+    string recipient = 3;
+    string phone = 4;
+    string province = 5;
+    string city = 6;
+    string district = 7;
+    string detail = 8;
+    string postal_code = 9;
+    bool is_default = 10;
+    string created_at = 11;
+    string updated_at = 12;
+}
+
+// 用户积分记录
+message UserPoint {
+    string id = 1;
+    string user_id = 2;
+    int32 points = 3;
+    PointReason reason = 4;
+    string description = 5;
+    string created_at = 6;
+    string expired_at = 7;
+}
+
+// 标签
+message Tag {
+    string id = 1;
+    string name = 2;
+    string created_at = 3;
+    string updated_at = 4;
+}
+
+// 用户标签关联
+message UserTag {
+    string user_id = 1;
+    string tag_id = 2;
+}

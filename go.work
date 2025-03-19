@@ -1,7 +1,13 @@
-go 1.22.0
+go 1.24.0
 
 use (
-	./admin-service
-	./framework
-	./gateway
+	./api
+	./frontend
+	./apps/gateway
+	./apps/user
+	./apps/cart
+	./apps/order
+	./apps/inventory
+	./apps/payment
+	./apps/product
 )

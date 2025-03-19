@@ -1,0 +1,17 @@
+edition = "2023";
+
+package user;
+option go_package = "./user/v1";
+
+enum Err {
+    OK = 0;
+    // zh: 用户不存在
+    // en: User not found
+    UserNotFound = 10020001; 
+    // zh: 用户被封禁
+    // en: User banned
+    UserBanned = 10020002;
+    // zh: 密码错误
+    // en: Invalid password
+    InvalidPassword = 10020003;
+}
