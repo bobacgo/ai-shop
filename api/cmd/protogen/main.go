@@ -109,4 +109,25 @@ func main() {
 	}
 
 	fmt.Printf("%s gRPC code generated successfully!\n", module)
+
+	// 执行protoc-go-inject-tag命令
+	// 遍历版本目录，为每个版本执行标签注入
+	for _, version := range versions {
+		if !version.IsDir() {
+			continue
+		}
+		pbPattern := filepath.Join(pbDir, module, version.Name(), "*.pb.go")
+		injectCmd := exec.Command("protoc-go-inject-tag", "-remove_tag_comment", "-input", pbPattern)
+		injectCmd.Stdout = os.Stdout
+		injectCmd.Stderr = os.Stderr
+
+		fmt.Printf("Injecting tags for %s...\n", module)
+		fmt.Printf("Command: protoc-go-inject-tag -remove_tag_comment -input=%s\n", pbPattern)
+		if err := injectCmd.Run(); err != nil {
+			fmt.Printf("Error injecting tags: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("%s tags injected successfully!\n", module)
+	}
 }

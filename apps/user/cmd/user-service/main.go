@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
+	"log"
+
 	"github.com/bobacgo/ai-shop/user/internal/config"
 	"github.com/bobacgo/ai-shop/user/internal/server"
 	"github.com/bobacgo/kit/app"
 	"github.com/bobacgo/kit/app/conf"
-	"log"
 )
 
 var filepath = flag.String("config", "./config.yaml", "config file path")
@@ -21,7 +22,7 @@ func init() {
 
 func main() {
 	newApp := app.New[config.Service](*filepath,
-		app.WithMustDB(),
+		// app.WithMustDB(),
 		// app.WithMustRedis(),
 		app.WithGrpcServer(server.GrpcRegisterServer),
 	)

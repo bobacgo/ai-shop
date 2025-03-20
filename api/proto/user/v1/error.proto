@@ -1,7 +1,7 @@
-edition = "2023";
+syntax = "proto3";
 
 package user;
-option go_package = "./user/v1";
+option go_package = "./user/v1/errs";
 
 enum Err {
     OK = 0;

@@ -1,14 +1,16 @@
-edition = "2023";
+syntax = "proto3";
 
 package user;
 option go_package = "./user/v1";
+
+import "google/protobuf/empty.proto";
 
 // ==================== 用户服务 ====================
 service UserService {
     rpc GetUserById (GetUserRequest) returns (UserResponse);
     rpc CreateUser (CreateUserRequest) returns (UserResponse);
     rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
-    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+    rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
 }
 
 message GetUserRequest {
@@ -16,26 +18,22 @@ message GetUserRequest {
 }
 
 message CreateUserRequest {
-    string username = 1;
-    string email = 2;
+    string username = 1;  // @gotags: validate:"required"
+    string email = 2; // @gotags: validate:"omitempty,email"
     string phone = 3;
-    string password = 4;
-    int32 role = 5;
+    string password = 4; // @gotags: validate:"min=6,max=16"
+    int32 Role = 5; 
 }
 
 message UpdateUserRequest {
-    string id = 1;
-    string username = 2;
-    string email = 3;
-    string phone = 4;
+    string id = 1; // @gotags: validate:"required"
+    string username = 2; 
+    string email = 3; // @gotags: validate:"omitempty,email"
+    string phone = 4; 
 }
 
 message DeleteUserRequest {
-    string id = 1;
-}
-
-message DeleteUserResponse {
-    bool success = 1;
+    string id = 1; // @gotags: validate:"required"
 }
 
 message UserResponse {
