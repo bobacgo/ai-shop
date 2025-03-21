@@ -31,7 +31,7 @@ func newMerchant(db *gorm.DB, opts ...gen.DOOption) merchant {
 	_merchant.UserID = field.NewString(tableName, "user_id")
 	_merchant.StoreName = field.NewString(tableName, "store_name")
 	_merchant.BusinessLicense = field.NewString(tableName, "business_license")
-	_merchant.STATUS = field.NewInt32(tableName, "STATUS")
+	_merchant.Status = field.NewInt32(tableName, "status")
 	_merchant.Balance = field.NewFloat64(tableName, "balance")
 	_merchant.CreatedAt = field.NewTime(tableName, "created_at")
 	_merchant.UpdatedAt = field.NewTime(tableName, "updated_at")
@@ -50,7 +50,7 @@ type merchant struct {
 	UserID          field.String  // 用户ID（逻辑关联 users(id)）
 	StoreName       field.String  // 店铺名称
 	BusinessLicense field.String  // 营业执照
-	STATUS          field.Int32   // 审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)
+	Status          field.Int32   // 审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)
 	Balance         field.Float64 // 商户账户余额
 	CreatedAt       field.Time    // 创建时间
 	UpdatedAt       field.Time    // 更新时间
@@ -74,7 +74,7 @@ func (m *merchant) updateTableName(table string) *merchant {
 	m.UserID = field.NewString(table, "user_id")
 	m.StoreName = field.NewString(table, "store_name")
 	m.BusinessLicense = field.NewString(table, "business_license")
-	m.STATUS = field.NewInt32(table, "STATUS")
+	m.Status = field.NewInt32(table, "status")
 	m.Balance = field.NewFloat64(table, "balance")
 	m.CreatedAt = field.NewTime(table, "created_at")
 	m.UpdatedAt = field.NewTime(table, "updated_at")
@@ -107,7 +107,7 @@ func (m *merchant) fillFieldMap() {
 	m.fieldMap["user_id"] = m.UserID
 	m.fieldMap["store_name"] = m.StoreName
 	m.fieldMap["business_license"] = m.BusinessLicense
-	m.fieldMap["STATUS"] = m.STATUS
+	m.fieldMap["status"] = m.Status
 	m.fieldMap["balance"] = m.Balance
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt

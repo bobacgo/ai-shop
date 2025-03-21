@@ -16,13 +16,15 @@ import (
 )
 
 var (
-	Q           = new(Query)
-	Merchant    *merchant
-	Tag         *tag
-	User        *user
-	UserAddress *userAddress
-	UserPoint   *userPoint
-	UserProfile *userProfile
+	Q                   = new(Query)
+	Merchant            *merchant
+	Tag                 *tag
+	User                *user
+	UserAddress         *userAddress
+	UserDeletionRequest *userDeletionRequest
+	UserLoginSuccessLog *userLoginSuccessLog
+	UserPoint           *userPoint
+	UserProfile         *userProfile
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -31,44 +33,52 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	Tag = &Q.Tag
 	User = &Q.User
 	UserAddress = &Q.UserAddress
+	UserDeletionRequest = &Q.UserDeletionRequest
+	UserLoginSuccessLog = &Q.UserLoginSuccessLog
 	UserPoint = &Q.UserPoint
 	UserProfile = &Q.UserProfile
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:          db,
-		Merchant:    newMerchant(db, opts...),
-		Tag:         newTag(db, opts...),
-		User:        newUser(db, opts...),
-		UserAddress: newUserAddress(db, opts...),
-		UserPoint:   newUserPoint(db, opts...),
-		UserProfile: newUserProfile(db, opts...),
+		db:                  db,
+		Merchant:            newMerchant(db, opts...),
+		Tag:                 newTag(db, opts...),
+		User:                newUser(db, opts...),
+		UserAddress:         newUserAddress(db, opts...),
+		UserDeletionRequest: newUserDeletionRequest(db, opts...),
+		UserLoginSuccessLog: newUserLoginSuccessLog(db, opts...),
+		UserPoint:           newUserPoint(db, opts...),
+		UserProfile:         newUserProfile(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Merchant    merchant
-	Tag         tag
-	User        user
-	UserAddress userAddress
-	UserPoint   userPoint
-	UserProfile userProfile
+	Merchant            merchant
+	Tag                 tag
+	User                user
+	UserAddress         userAddress
+	UserDeletionRequest userDeletionRequest
+	UserLoginSuccessLog userLoginSuccessLog
+	UserPoint           userPoint
+	UserProfile         userProfile
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:          db,
-		Merchant:    q.Merchant.clone(db),
-		Tag:         q.Tag.clone(db),
-		User:        q.User.clone(db),
-		UserAddress: q.UserAddress.clone(db),
-		UserPoint:   q.UserPoint.clone(db),
-		UserProfile: q.UserProfile.clone(db),
+		db:                  db,
+		Merchant:            q.Merchant.clone(db),
+		Tag:                 q.Tag.clone(db),
+		User:                q.User.clone(db),
+		UserAddress:         q.UserAddress.clone(db),
+		UserDeletionRequest: q.UserDeletionRequest.clone(db),
+		UserLoginSuccessLog: q.UserLoginSuccessLog.clone(db),
+		UserPoint:           q.UserPoint.clone(db),
+		UserProfile:         q.UserProfile.clone(db),
 	}
 }
 
@@ -82,33 +92,39 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:          db,
-		Merchant:    q.Merchant.replaceDB(db),
-		Tag:         q.Tag.replaceDB(db),
-		User:        q.User.replaceDB(db),
-		UserAddress: q.UserAddress.replaceDB(db),
-		UserPoint:   q.UserPoint.replaceDB(db),
-		UserProfile: q.UserProfile.replaceDB(db),
+		db:                  db,
+		Merchant:            q.Merchant.replaceDB(db),
+		Tag:                 q.Tag.replaceDB(db),
+		User:                q.User.replaceDB(db),
+		UserAddress:         q.UserAddress.replaceDB(db),
+		UserDeletionRequest: q.UserDeletionRequest.replaceDB(db),
+		UserLoginSuccessLog: q.UserLoginSuccessLog.replaceDB(db),
+		UserPoint:           q.UserPoint.replaceDB(db),
+		UserProfile:         q.UserProfile.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Merchant    IMerchantDo
-	Tag         ITagDo
-	User        IUserDo
-	UserAddress IUserAddressDo
-	UserPoint   IUserPointDo
-	UserProfile IUserProfileDo
+	Merchant            IMerchantDo
+	Tag                 ITagDo
+	User                IUserDo
+	UserAddress         IUserAddressDo
+	UserDeletionRequest IUserDeletionRequestDo
+	UserLoginSuccessLog IUserLoginSuccessLogDo
+	UserPoint           IUserPointDo
+	UserProfile         IUserProfileDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Merchant:    q.Merchant.WithContext(ctx),
-		Tag:         q.Tag.WithContext(ctx),
-		User:        q.User.WithContext(ctx),
-		UserAddress: q.UserAddress.WithContext(ctx),
-		UserPoint:   q.UserPoint.WithContext(ctx),
-		UserProfile: q.UserProfile.WithContext(ctx),
+		Merchant:            q.Merchant.WithContext(ctx),
+		Tag:                 q.Tag.WithContext(ctx),
+		User:                q.User.WithContext(ctx),
+		UserAddress:         q.UserAddress.WithContext(ctx),
+		UserDeletionRequest: q.UserDeletionRequest.WithContext(ctx),
+		UserLoginSuccessLog: q.UserLoginSuccessLog.WithContext(ctx),
+		UserPoint:           q.UserPoint.WithContext(ctx),
+		UserProfile:         q.UserProfile.WithContext(ctx),
 	}
 }
 

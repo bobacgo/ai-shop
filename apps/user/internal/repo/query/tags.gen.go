@@ -28,7 +28,7 @@ func newTag(db *gorm.DB, opts ...gen.DOOption) tag {
 	tableName := _tag.tagDo.TableName()
 	_tag.ALL = field.NewAsterisk(tableName)
 	_tag.ID = field.NewString(tableName, "id")
-	_tag.NAME = field.NewString(tableName, "NAME")
+	_tag.Name = field.NewString(tableName, "name")
 	_tag.CreatedAt = field.NewTime(tableName, "created_at")
 	_tag.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -43,7 +43,7 @@ type tag struct {
 
 	ALL       field.Asterisk
 	ID        field.String // 标签ID
-	NAME      field.String // 标签名称（如VIP、新用户）
+	Name      field.String // 标签名称（如VIP、新用户）
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
 
@@ -63,7 +63,7 @@ func (t tag) As(alias string) *tag {
 func (t *tag) updateTableName(table string) *tag {
 	t.ALL = field.NewAsterisk(table)
 	t.ID = field.NewString(table, "id")
-	t.NAME = field.NewString(table, "NAME")
+	t.Name = field.NewString(table, "name")
 	t.CreatedAt = field.NewTime(table, "created_at")
 	t.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -92,7 +92,7 @@ func (t *tag) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 func (t *tag) fillFieldMap() {
 	t.fieldMap = make(map[string]field.Expr, 4)
 	t.fieldMap["id"] = t.ID
-	t.fieldMap["NAME"] = t.NAME
+	t.fieldMap["name"] = t.Name
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["updated_at"] = t.UpdatedAt
 }

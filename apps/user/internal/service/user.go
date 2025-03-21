@@ -6,9 +6,6 @@ import (
 	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
 	"github.com/bobacgo/ai-shop/api/pb/user/v1/errs"
 	"github.com/bobacgo/ai-shop/user/internal/repo"
-	"github.com/bobacgo/kit/app/validator"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -28,9 +25,6 @@ func (u UserService) GetUserById(ctx context.Context, request *v1.GetUserRequest
 }
 
 func (u UserService) CreateUser(ctx context.Context, request *v1.CreateUserRequest) (*v1.UserResponse, error) {
-	if err := validator.StructCtx(ctx, request); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
 	return nil, errs.Status(ctx, errs.Err_UserNotFound)
 }
 

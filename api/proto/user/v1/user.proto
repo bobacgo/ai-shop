@@ -84,6 +84,11 @@ service AddressService {
     rpc DeleteUserAddress (DeleteUserAddressRequest) returns (DeleteUserAddressResponse);
 }
 
+// 密码强度错误信息
+message PasswordStrengthError {
+    int32 level = 1; // 密码强度等级
+}
+
 message GetUserAddressRequest {
     string user_id = 1;
 }

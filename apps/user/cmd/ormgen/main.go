@@ -10,7 +10,7 @@ var db *gorm.DB
 
 func init() {
 	var err error
-	db, err = gorm.Open(mysql.Open("root:root@tcp(127.0.0.1:3306)/ai_shop_user"))
+	db, err = gorm.Open(mysql.Open("root:123456@tcp(127.0.0.1:3306)/ai_shop_user"))
 	if err != nil {
 		panic(err)
 	}
@@ -34,6 +34,8 @@ func main() {
 		g.GenerateModel("user_points"),
 		g.GenerateModel("user_profiles"),
 		g.GenerateModel("users"),
+		g.GenerateModel("user_deletion_requests"),
+		g.GenerateModel("user_login_success_log"),
 	)
 	g.Execute()
 }

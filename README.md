@@ -1,5 +1,7 @@
 # gogo-services
 
+![](./image.png)
+
 ### 项目组件依赖
 
 - [PolarisMesh](https://polarismesh.cn) DNS 注册中心、配置中心

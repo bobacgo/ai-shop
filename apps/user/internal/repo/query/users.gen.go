@@ -31,9 +31,9 @@ func newUser(db *gorm.DB, opts ...gen.DOOption) user {
 	_user.Username = field.NewString(tableName, "username")
 	_user.Email = field.NewString(tableName, "email")
 	_user.Phone = field.NewString(tableName, "phone")
-	_user.PASSWORD = field.NewBytes(tableName, "PASSWORD")
+	_user.Password = field.NewBytes(tableName, "password")
 	_user.Role = field.NewInt32(tableName, "role")
-	_user.STATUS = field.NewInt32(tableName, "STATUS")
+	_user.Status = field.NewInt32(tableName, "status")
 	_user.CreatedAt = field.NewTime(tableName, "created_at")
 	_user.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -51,9 +51,9 @@ type user struct {
 	Username  field.String // 用户名（区分大小写）
 	Email     field.String // 邮箱（区分大小写）
 	Phone     field.String // 手机号
-	PASSWORD  field.Bytes  // 加密存储的密码
+	Password  field.Bytes  // 加密存储的密码
 	Role      field.Int32  // 用户角色 (1=消费者, 2=商户, 3=管理员)
-	STATUS    field.Int32  // 用户状态 (1=正常, 0=禁用, 2=已注销)
+	Status    field.Int32  // 用户状态 (1=正常, 0=禁用, 2=已注销)
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
 
@@ -76,9 +76,9 @@ func (u *user) updateTableName(table string) *user {
 	u.Username = field.NewString(table, "username")
 	u.Email = field.NewString(table, "email")
 	u.Phone = field.NewString(table, "phone")
-	u.PASSWORD = field.NewBytes(table, "PASSWORD")
+	u.Password = field.NewBytes(table, "password")
 	u.Role = field.NewInt32(table, "role")
-	u.STATUS = field.NewInt32(table, "STATUS")
+	u.Status = field.NewInt32(table, "status")
 	u.CreatedAt = field.NewTime(table, "created_at")
 	u.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -110,9 +110,9 @@ func (u *user) fillFieldMap() {
 	u.fieldMap["username"] = u.Username
 	u.fieldMap["email"] = u.Email
 	u.fieldMap["phone"] = u.Phone
-	u.fieldMap["PASSWORD"] = u.PASSWORD
+	u.fieldMap["password"] = u.Password
 	u.fieldMap["role"] = u.Role
-	u.fieldMap["STATUS"] = u.STATUS
+	u.fieldMap["status"] = u.Status
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
 }

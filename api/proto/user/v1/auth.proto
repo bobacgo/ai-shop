@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package user;
+option go_package = "./user/v1";
+
+import "google/protobuf/empty.proto";
+
+// 认证服务
+service AuthService {
+    // 登录
+    rpc Login (LoginRequest) returns (LoginResponse);
+    // 注册并登录
+    rpc Register (RegisterRequest) returns (LoginResponse);
+    // 重置密码
+    rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty);
+    // 发送验证码
+    rpc SendVerificationCode (google.protobuf.Empty) returns (SendVerificationCodeResponse);
+    // 刷新token
+    rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+    // 登出
+    rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty);
+    // 注销账号
+    rpc Deregister (DeregisterRequest) returns (google.protobuf.Empty);
+}
+
+// 登录请求
+message LoginRequest {
+    string username = 1; // @gotags: validate:"required"
+    string password = 2; // @gotags: validate:"required,min=6,max=16"
+    string verification_key = 3; // @gotags: validate:"required"
+    string verification_code = 4; // @gotags: validate:"required,len=6"
+}
+
+// 登录响应
+message LoginResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+    string token_type = 3;
+    int64 expires_in = 4;
+}
+
+// 注册请求
+message RegisterRequest {
+    string username = 1; // @gotags: validate:"required"
+    string password = 2; // @gotags: validate:"required,min=6,max=16"
+    string email = 3; // @gotags: validate:"omitempty,email"
+    string phone = 4; // @gotags: validate:"omitempty"
+    string verification_key = 5; // @gotags: validate:"required"
+    string verification_code = 6; // @gotags: validate:"required,len=6"
+}
+// 重置密码请求
+message ResetPasswordRequest {
+    string username = 1; // @gotags: validate:"required"
+    string old_password = 2; // @gotags: validate:"required,min=6,max=16"
+    string new_password = 3; // @gotags: validate:"required,min=6,max=16"
+}
+
+// 发送验证码响应
+message SendVerificationCodeResponse {
+    string verification_key = 1;
+    string verification_image = 2;
+}
+
+// 刷新token请求
+message RefreshTokenRequest {
+    string refresh_token = 1; // @gotags: validate:"required"
+}
+
+// 刷新token响应
+message RefreshTokenResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+    string token_type = 3;
+    int64 expires_in = 4;
+}
+
+// 注销账号请求
+message DeregisterRequest {
+    string user_id = 1; // @gotags: validate:"required"
+    string password = 2; // @gotags: validate:"required,min=6,max=16"
+}

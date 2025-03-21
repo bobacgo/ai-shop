@@ -12,6 +12,10 @@ import (
 
 // ErrorMessageMap 存储错误码及其多语言信息
 var ErrorMessageMap = map[Err]map[string]string{
+	10000001: {
+		"zh": "系统繁忙",
+		"en": "System busy",
+	},
 	10020001: {
 		"zh": "用户不存在",
 		"en": "User not found",
@@ -21,8 +25,36 @@ var ErrorMessageMap = map[Err]map[string]string{
 		"en": "User banned",
 	},
 	10020003: {
+		"zh": "用户已存在",
+		"en": "User already exists",
+	},
+	10020004: {
+		"zh": "用户在注销中",
+		"en": "User is deleting",
+	},
+	10020005: {
+		"zh": "登录失败",
+		"en": "login failed error",
+	},
+	10020009: {
+		"zh": "用户名或密码错误",
+		"en": "Username or password error",
+	},
+	10020010: {
 		"zh": "密码错误",
 		"en": "Invalid password",
+	},
+	10020012: {
+		"zh": "密码格式不符合",
+		"en": "Invalid password format",
+	},
+	10020020: {
+		"zh": "验证码加载失败",
+		"en": "Captcha load failed",
+	},
+	10020021: {
+		"zh": "验证码错误",
+		"en": "Captcha valid failed",
 	},
 }
 

@@ -16,7 +16,7 @@ type Merchant struct {
 	UserID          string     `gorm:"column:user_id;type:varchar(36);not null;uniqueIndex:user_id,priority:1;index:idx_user_id,priority:1;comment:用户ID（逻辑关联 users(id)）" json:"user_id"` // 用户ID（逻辑关联 users(id)）
 	StoreName       string     `gorm:"column:store_name;type:varchar(100);not null;comment:店铺名称" json:"store_name"`                                                                      // 店铺名称
 	BusinessLicense string     `gorm:"column:business_license;type:varchar(255);not null;comment:营业执照" json:"business_license"`                                                          // 营业执照
-	STATUS          int32      `gorm:"column:STATUS;type:tinyint;not null;comment:审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)" json:"STATUS"`                                                     // 审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)
+	Status          int32      `gorm:"column:status;type:tinyint;not null;comment:审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)" json:"status"`                                                     // 审核状态 (0=待审核, 1=审核通过, 2=审核拒绝, 3=封禁)
 	Balance         *float64   `gorm:"column:balance;type:decimal(10,2);default:0.00;comment:商户账户余额" json:"balance"`                                                                     // 商户账户余额
 	CreatedAt       *time.Time `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`                                                        // 创建时间
 	UpdatedAt       *time.Time `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"`                                                        // 更新时间

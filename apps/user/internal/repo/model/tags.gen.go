@@ -13,7 +13,7 @@ const TableNameTag = "tags"
 // Tag 标签表
 type Tag struct {
 	ID        string     `gorm:"column:id;type:varchar(36);primaryKey;comment:标签ID" json:"id"`                                          // 标签ID
-	NAME      string     `gorm:"column:NAME;type:varchar(100);not null;uniqueIndex:NAME,priority:1;comment:标签名称（如VIP、新用户）" json:"NAME"` // 标签名称（如VIP、新用户）
+	Name      string     `gorm:"column:name;type:varchar(100);not null;uniqueIndex:name,priority:1;comment:标签名称（如VIP、新用户）" json:"name"` // 标签名称（如VIP、新用户）
 	CreatedAt *time.Time `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`             // 创建时间
 	UpdatedAt *time.Time `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"`             // 更新时间
 }

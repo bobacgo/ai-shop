@@ -183,9 +183,15 @@ func parseProtoFile(filename string) (map[int32]map[string]string, error) {
 
 		// 匹配错误码
 		if matches := codeRegex.FindStringSubmatch(line); matches != nil {
+			if len(matches[2]) != 8 {
+				fmt.Printf("Warning: Error code %s is not a 6-digit number in line: %s\n", matches[2], line)
+			}
+
+			// 检查错误码长度是否为6位数
+			code, _ := strconv.ParseInt(matches[2], 10, 32)
+
 			// 只有当同时具有中英文注释时才生成错误信息
 			if zhText != "" && enText != "" {
-				code, _ := strconv.ParseInt(matches[2], 10, 32) // 解析错误码
 				errors[int32(code)] = map[string]string{
 					"zh": zhText,
 					"en": enText,

@@ -16,9 +16,9 @@ type User struct {
 	Username  string     `gorm:"column:username;type:varchar(50);not null;comment:用户名（区分大小写）" json:"username"`                 // 用户名（区分大小写）
 	Email     *string    `gorm:"column:email;type:varchar(100);comment:邮箱（区分大小写）" json:"email"`                                // 邮箱（区分大小写）
 	Phone     *string    `gorm:"column:phone;type:varchar(20);uniqueIndex:phone,priority:1;comment:手机号" json:"phone"`          // 手机号
-	PASSWORD  []byte     `gorm:"column:PASSWORD;type:varbinary(255);not null;comment:加密存储的密码" json:"PASSWORD"`                 // 加密存储的密码
+	Password  []byte     `gorm:"column:password;type:varbinary(255);not null;comment:加密存储的密码" json:"password"`                 // 加密存储的密码
 	Role      int32      `gorm:"column:role;type:tinyint;not null;comment:用户角色 (1=消费者, 2=商户, 3=管理员)" json:"role"`              // 用户角色 (1=消费者, 2=商户, 3=管理员)
-	STATUS    int32      `gorm:"column:STATUS;type:tinyint;not null;default:1;comment:用户状态 (1=正常, 0=禁用, 2=已注销)" json:"STATUS"` // 用户状态 (1=正常, 0=禁用, 2=已注销)
+	Status    int32      `gorm:"column:status;type:tinyint;not null;default:1;comment:用户状态 (1=正常, 0=禁用, 2=已注销)" json:"status"` // 用户状态 (1=正常, 0=禁用, 2=已注销)
 	CreatedAt *time.Time `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"`    // 创建时间
 	UpdatedAt *time.Time `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"`    // 更新时间
 }
