@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
+	v1 "github.com/bobacgo/ai-shop/api/gen/go/user/v1"
 	"github.com/bobacgo/ai-shop/user/internal/repo/model"
 	"github.com/bobacgo/ai-shop/user/internal/repo/query"
 	"github.com/bobacgo/kit/web/r/page"

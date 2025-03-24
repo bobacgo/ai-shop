@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
-	"github.com/bobacgo/ai-shop/api/pb/user/v1/errs"
+	v1 "github.com/bobacgo/ai-shop/api/gen/go/user/v1"
+	"github.com/bobacgo/ai-shop/api/gen/go/user/v1/errs"
 	"github.com/bobacgo/ai-shop/user/internal/repo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

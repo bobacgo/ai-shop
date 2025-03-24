@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
+	v1 "github.com/bobacgo/ai-shop/api/gen/go/user/v1"
 	"github.com/bobacgo/ai-shop/user/internal/repo"
 	"github.com/bobacgo/ai-shop/user/internal/service"
 	"github.com/bobacgo/kit/app"

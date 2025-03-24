@@ -9,16 +9,14 @@ PROTO_FILES := $(shell find $(PROTO_SRC) -name "*.proto")
 
 # init env
 # 使用方式: make init
+# 需要添加其他 tool, 请执行 go get -tool github.com/xxx/xxx@latest
 .PHONY: init
 init:
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
-	go install github.com/favadi/protoc-go-inject-tag@latest
 	go get -u google.golang.org/grpc@latest
 	go get -u google.golang.org/genproto/googleapis/api
 	go mod tidy
+	go install ./...
+
 
 # 默认构建所有 proto
 # 使用方式: make proto

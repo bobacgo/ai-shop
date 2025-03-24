@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
-	"github.com/bobacgo/ai-shop/api/pb/user/v1/errs"
+	v1 "github.com/bobacgo/ai-shop/api/gen/go/user/v1"
+	"github.com/bobacgo/ai-shop/api/gen/go/user/v1/errs"
 	"github.com/bobacgo/ai-shop/user/internal/config"
 	"github.com/bobacgo/ai-shop/user/internal/repo"
 	"github.com/bobacgo/ai-shop/user/internal/repo/model"
@@ -141,6 +141,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 	}, nil
 }
 
+// Register 注册 (无需鉴权)
 func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest) (*v1.LoginResponse, error) {
 
 	// 要求

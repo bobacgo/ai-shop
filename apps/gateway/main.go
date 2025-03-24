@@ -9,9 +9,9 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/metadata"
 
-	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
+	v1 "github.com/bobacgo/ai-shop/api/gen/go/user/v1"
+	"github.com/bobacgo/ai-shop/gatway/middleware"
 )
 
 const (
@@ -20,20 +20,13 @@ const (
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// 创建grpc-gateway的mux
 	mux := runtime.NewServeMux(
-		runtime.WithMetadata(func(ctx context.Context, req *http.Request) metadata.MD {
-			// 处理请求头，将HTTP请求头转换为gRPC metadata
-			md := make(map[string]string)
-			if auth := req.Header.Get("Authorization"); auth != "" {
-				md["authorization"] = auth
-			}
-			return metadata.New(md)
-		}),
+		runtime.WithMiddlewares(middleware.Middlewares...),
+		runtime.WithMetadata(HeaderToMD),
 		runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
 	)
 
