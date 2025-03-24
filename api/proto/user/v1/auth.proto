@@ -4,23 +4,58 @@ package user;
 option go_package = "./user/v1";
 
 import "google/protobuf/empty.proto";
+// 导入google api注解，用于HTTP接口定义
+import "google/api/annotations.proto";
 
 // 认证服务
 service AuthService {
     // 登录
-    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc Login (LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/login"
+            body: "*"
+        };
+    }
     // 注册并登录
-    rpc Register (RegisterRequest) returns (LoginResponse);
+    rpc Register (RegisterRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/register"
+            body: "*"
+        };
+    }
     // 重置密码
-    rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty);
+    rpc ResetPassword (ResetPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/auth/reset-password"
+            body: "*"
+        };
+    }
     // 发送验证码
-    rpc SendVerificationCode (google.protobuf.Empty) returns (SendVerificationCodeResponse);
+    rpc SendVerificationCode (google.protobuf.Empty) returns (SendVerificationCodeResponse) {
+        option (google.api.http) = {
+            get: "/v1/auth/captcha"
+        };
+    }
     // 刷新token
-    rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+    rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/auth/refresh-token"
+            body: "*"
+        };
+    }
     // 登出
-    rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/auth/logout"
+        };
+    }
     // 注销账号
-    rpc Deregister (DeregisterRequest) returns (google.protobuf.Empty);
+    rpc Deregister (DeregisterRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/auth/deregister"
+            body: "*"
+        };
+    }
 }
 
 // 登录请求

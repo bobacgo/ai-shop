@@ -34,6 +34,7 @@ logger:
 # db
 db:
   default:
+    driver: mysql
     dryRun: false # 是否空跑 (用于调试,数据不会写入数据库)
     source: root:123456@tcp(127.0.0.1:3306)/ai_shop_user?charset=utf8mb4&parseTime=True&loc=Local
     slowThreshold: 1

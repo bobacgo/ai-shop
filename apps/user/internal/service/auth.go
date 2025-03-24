@@ -43,6 +43,7 @@ func NewAuthService(rdb redis.UniversalClient, r *repo.All) *AuthService {
 	}
 }
 
+// Login 登录 (无需鉴权)
 func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.LoginResponse, error) {
 
 	// 要求
@@ -283,7 +284,7 @@ func (s *AuthService) ResetPassword(ctx context.Context, request *v1.ResetPasswo
 	return &emptypb.Empty{}, nil
 }
 
-// 生成验证码
+// 生成验证码 (无需鉴权)
 func (s *AuthService) SendVerificationCode(ctx context.Context, _ *emptypb.Empty) (*v1.SendVerificationCodeResponse, error) {
 
 	// 要求
@@ -302,6 +303,7 @@ func (s *AuthService) SendVerificationCode(ctx context.Context, _ *emptypb.Empty
 	}, nil
 }
 
+// 刷新token (无需鉴权)
 func (s *AuthService) RefreshToken(ctx context.Context, request *v1.RefreshTokenRequest) (*v1.RefreshTokenResponse, error) {
 
 	// 要求

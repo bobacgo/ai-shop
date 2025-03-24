@@ -4,13 +4,32 @@ package user;
 option go_package = "./user/v1";
 
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
 // ==================== 用户服务 ====================
 service UserService {
-    rpc GetUserById (GetUserRequest) returns (UserResponse);
-    rpc CreateUser (CreateUserRequest) returns (UserResponse);
-    rpc UpdateUser (UpdateUserRequest) returns (UserResponse);
-    rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
+    rpc GetUserById (GetUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            get: "/v1/users/{id}"
+        };
+    }
+    rpc CreateUser (CreateUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            post: "/v1/users"
+            body: "*"
+        };
+    }
+    rpc UpdateUser (UpdateUserRequest) returns (UserResponse) {
+        option (google.api.http) = {
+            put: "/v1/users/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/users/{id}"
+        };
+    }
 }
 
 message GetUserRequest {
@@ -42,10 +61,28 @@ message UserResponse {
 
 // ==================== 商户服务 ====================
 service MerchantService {
-    rpc GetMerchantById (GetMerchantRequest) returns (MerchantResponse);
-    rpc CreateMerchant (CreateMerchantRequest) returns (MerchantResponse);
-    rpc UpdateMerchant (UpdateMerchantRequest) returns (MerchantResponse);
-    rpc DeleteMerchant (DeleteMerchantRequest) returns (DeleteMerchantResponse);
+    rpc GetMerchantById (GetMerchantRequest) returns (MerchantResponse) {
+        option (google.api.http) = {
+            get: "/v1/merchants/{id}"
+        };
+    }
+    rpc CreateMerchant (CreateMerchantRequest) returns (MerchantResponse) {
+        option (google.api.http) = {
+            post: "/v1/merchants"
+            body: "*"
+        };
+    }
+    rpc UpdateMerchant (UpdateMerchantRequest) returns (MerchantResponse) {
+        option (google.api.http) = {
+            put: "/v1/merchants/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteMerchant (DeleteMerchantRequest) returns (DeleteMerchantResponse) {
+        option (google.api.http) = {
+            delete: "/v1/merchants/{id}"
+        };
+    }
 }
 
 message GetMerchantRequest {

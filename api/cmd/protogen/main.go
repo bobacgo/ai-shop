@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	protoDir = "proto" // proto文件目录
-	pbDir    = "pb"    // 生成pb.go代码的目录
+	protoDir   = "proto"   // proto文件目录
+	pbDir      = "pb"      // 生成pb.go代码的目录
+	swaggerDir = "swagger" // swagger文档目录
 )
 
 // go run main.go <module_name>
@@ -74,11 +75,21 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 确保swagger目录存在
+	if err := os.MkdirAll(filepath.Join(wd, swaggerDir), 0755); err != nil {
+		fmt.Printf("Error creating swagger directory: %v\n", err)
+		os.Exit(1)
+	}
+
 	// 构建protoc命令
 	args := []string{
 		"--go_out=" + pbDir,
 		"--go-grpc_out=" + pbDir,
-		"--proto_path=" + wd, // 使用工作目录作为proto_path的根目录
+		"--grpc-gateway_out=" + pbDir,
+		"--openapiv2_out=" + swaggerDir,
+		"--openapiv2_opt=allow_merge=true,merge_file_name=" + module,
+		"--proto_path=" + wd,                                        // 使用工作目录作为proto_path的根目录
+		"--proto_path=" + filepath.Join(wd, "proto", "third_party"), // 添加third_party目录
 	}
 
 	// 将proto文件路径转换为相对于proto_path的路径

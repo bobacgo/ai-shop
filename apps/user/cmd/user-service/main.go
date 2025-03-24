@@ -22,8 +22,8 @@ func init() {
 
 func main() {
 	newApp := app.New[config.Service](*filepath,
-		// app.WithMustDB(),
-		// app.WithMustRedis(),
+		app.WithMustDB(),
+		app.WithMustRedis(),
 		app.WithGrpcServer(server.GrpcRegisterServer),
 	)
 	if err := newApp.Run(); err != nil {

@@ -12,9 +12,15 @@ func GrpcRegisterServer(srv *grpc.Server, comps *app.AppOptions) {
 	data := repo.NewData(comps)
 
 	// repo
-	userRepo := repo.NewUserRepo(data)
+	repoAll := repo.New(
+		repo.NewCaptchaRepo(data),
+		repo.NewUserRepo(data),
+		repo.NewUserDeletionRequestRepo(data),
+		repo.NewUserLoginSuccessLogRepo(data),
+	)
 
 	// register
-	v1.RegisterUserServiceServer(srv, service.NewUserService(userRepo))
+	v1.RegisterUserServiceServer(srv, service.NewUserService(repoAll.User))
+	v1.RegisterAuthServiceServer(srv, service.NewAuthService(data.Rds, repoAll))
 	// v1.RegisterMerchantServiceServer(srv, &v1.Server{})
 }
