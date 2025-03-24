@@ -46,13 +46,14 @@ db:
 redis:
   # 1.集群模式，可以填写多个地址
   # 2.单机模式，一个地址
-  addrs: ['127.0.0.1:6379']
-  db: 0
-  username:
-  password:
-  readTimeout: 1ms
-  writeTimeout: 1ms
-  poolSize: 50
+  default:
+    addrs: ['127.0.0.1:6379']
+    db: 0
+    username:
+    password:
+    readTimeout: 1ms
+    writeTimeout: 1ms
+    poolSize: 50
 
 # 业务相关
 service:

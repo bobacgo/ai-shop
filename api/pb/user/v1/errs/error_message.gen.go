@@ -48,6 +48,10 @@ var ErrorMessageMap = map[Err]map[string]string{
 		"zh": "密码格式不符合",
 		"en": "Invalid password format",
 	},
+	10020013: {
+		"zh": "新密码与旧密码相同",
+		"en": "New Password Same As Old",
+	},
 	10020020: {
 		"zh": "验证码加载失败",
 		"en": "Captcha load failed",
@@ -56,11 +60,27 @@ var ErrorMessageMap = map[Err]map[string]string{
 		"zh": "验证码错误",
 		"en": "Captcha valid failed",
 	},
+	10020022: {
+		"zh": "令牌格式错误",
+		"en": "Token format error",
+	},
+	10020023: {
+		"zh": "令牌无效",
+		"en": "Token invalid",
+	},
+	10020024: {
+		"zh": "令牌过期",
+		"en": "Token expired",
+	},
+	10020025: {
+		"zh": "令牌主题无效",
+		"en": "Token subject invalid",
+	},
 }
 
 // New 返回带有错误信息的状态
 func New(ctx context.Context, code Err) *status.Status {
-	return status.New(uint32(code), GetErrorMessage(ctx, code))
+	return status.New(int32(code), GetErrorMessage(ctx, code))
 }
 
 // Status grpc status 返回带有错误信息的状态

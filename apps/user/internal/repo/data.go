@@ -16,7 +16,7 @@ type Data struct {
 func NewData(app *app.AppOptions) *Data {
 	return &Data{
 		Cache: app.LocalCache(),
-		Rds:   app.Redis(),
+		Rds:   app.Redis().Default(),
 		DB:    app.DB().Default(),
 	}
 }

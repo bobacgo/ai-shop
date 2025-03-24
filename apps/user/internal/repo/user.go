@@ -59,6 +59,11 @@ func (r *UserRepo) UpdateStatus(ctx context.Context, id string, status int32) er
 	return err
 }
 
+func (r *UserRepo) UpdatePassword(ctx context.Context, id string, passwd string) any {
+	_, err := r.q.User.WithContext(ctx).Where(r.q.User.ID.Eq(id)).Update(r.q.User.Password, passwd)
+	return err
+}
+
 // DeletedUser 注销用户
 func (r *UserRepo) DeletedUser(ctx context.Context, id string) error {
 	return r.q.Transaction(func(tx *query.Query) error {

@@ -3,7 +3,7 @@ module github.com/bobacgo/ai-shop/user
 go 1.24.0
 
 require (
-	github.com/bobacgo/kit v0.1.2
+	github.com/bobacgo/kit v0.1.3
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	golang.org/x/image v0.23.0 // indirect
 )

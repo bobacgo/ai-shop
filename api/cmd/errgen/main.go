@@ -35,7 +35,7 @@ var ErrorMessageMap = map[Err]map[string]string{
 
 // New 返回带有错误信息的状态
 func New(ctx context.Context, code Err) *status.Status {
-	return status.New(uint32(code), GetErrorMessage(ctx, code))
+	return status.New(int32(code), GetErrorMessage(ctx, code))
 }
 
 // Status grpc status 返回带有错误信息的状态

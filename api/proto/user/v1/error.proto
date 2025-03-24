@@ -6,9 +6,15 @@ option go_package = "./user/v1/errs";
 enum Err {
     OK = 0;
 
+    // 系统错误
+    // ============= 10000000 - 10000009
+
     // zh: 系统繁忙
     // en: System busy
     SystemBusy = 10000001;
+
+    // 用户错误
+    // ============= 10020000 - 10020009 
 
     // zh: 用户不存在
     // en: User not found
@@ -31,12 +37,21 @@ enum Err {
     // en: Username or password error
     UsernameOrPasswordErr = 10020009;
 
+    // 密码错误
+    // ============ 10020010 - 10020019 
+
     // zh: 密码错误
     // en: Invalid password
     InvalidPassword = 10020010;
     // zh: 密码格式不符合
     // en: Invalid password format
     InvalidPasswordFormat = 10020012;
+    // zh: 新密码与旧密码相同
+    // en: New Password Same As Old
+    NewPasswordSameAsOld = 10020013;
+
+    // 验证错误
+    // ============ 10020020 - 10020029 
 
     // zh: 验证码加载失败
     // en: Captcha load failed
@@ -44,4 +59,17 @@ enum Err {
     // zh: 验证码错误
     // en: Captcha valid failed
     CaptchaValidFailed = 10020021;
+ 
+    // zh: 令牌格式错误
+	// en: Token format error
+	TokenMalformed = 10020022; 
+	// zh: 令牌无效
+	// en: Token invalid        
+	TokenUnverifiable = 10020023;    
+	// zh: 令牌过期
+	// en: Token expired     
+	TokenExpired = 10020024; 
+	// zh: 令牌主题无效
+	// en: Token subject invalid             
+	TokenInvalidSubject = 10020025;
 }

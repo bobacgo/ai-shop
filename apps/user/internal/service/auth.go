@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"strconv"
 	"time"
 
 	v1 "github.com/bobacgo/ai-shop/api/pb/user/v1"
@@ -13,6 +12,8 @@ import (
 	"github.com/bobacgo/ai-shop/user/internal/repo"
 	"github.com/bobacgo/ai-shop/user/internal/repo/model"
 	"github.com/bobacgo/kit/app/security"
+	"github.com/bobacgo/kit/pkg/ucrypto"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/mojocn/base64Captcha"
 	"github.com/redis/go-redis/v9"
@@ -31,14 +32,14 @@ type AuthService struct {
 	repo             *repo.All
 }
 
-func NewAuthService(rdb redis.UniversalClient, repo *repo.All) *AuthService {
+func NewAuthService(rdb redis.UniversalClient, r *repo.All) *AuthService {
 	return &AuthService{
-		b64c: base64Captcha.NewCaptcha(base64Captcha.DefaultDriverDigit, repo.Captcha),
+		b64c: base64Captcha.NewCaptcha(base64Captcha.DefaultDriverDigit, r.Captcha),
 		// 密码强度: 大小写+数字、 len > 6
 		passwordStrength: security.NewPasswordValidator(6, true, true, true, false),
-		passwdVerifier:   security.NewPasswdVerifier(rdb, config.Cfg().Service.ErrAttemptLimit),
+		passwdVerifier:   security.NewPasswdVerifier(rdb, repo.PasswdErrLimitPrefixKey(), 0, int32(config.Cfg().Service.ErrAttemptLimit)),
 		jwtHelper:        security.NewJWT(&config.Cfg().Security.Jwt, rdb),
-		repo:             repo,
+		repo:             r,
 	}
 }
 
@@ -50,7 +51,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 	// 3.是否禁用（包括已注销的）
 	// 4.校验密码
 	// 5.登录次数（防止被暴力破解），登录次数超过5次直接禁用
-	// 6.重置token（同时只能一个地方登录），如果有
+	// 6.生成新token, 并更新token
 	// 7.更新登录日志
 
 	// 1.支持多平台， 不同平台有不同的 token
@@ -62,22 +63,24 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 	}
 
 	// 2. 对密码字段从密文转换成明文
-	ciphertext := security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey)
-	if err := ciphertext.Decrypt(req.Password); err != nil {
+	passwd, err := s.aesDecrypt(req.Password)
+	if err != nil {
 		slog.ErrorContext(ctx, "ciphertext.Decrypt",
-			"secret", security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey), // 脱敏打印
+			"secret", config.Cfg().Security.Ciphertext.CipherKey, // 自动脱敏打印
 			"password", req.Password,
 			"err", err,
 		)
 		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
 	}
-	req.Password = string(ciphertext)
 
 	// 3. 查询用户信息并检查状态
 	user, err := s.repo.User.FindOneUserByUsername(ctx, req.Username)
 	if err != nil {
+		// 用户名不存在
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// TODO 记录登录失败次数
+			if err := s.passwdVerifier.Incr(ctx); err != nil {
+				slog.ErrorContext(ctx, "s.passwdVerifier.Incr", "err", err)
+			}
 			return nil, errs.Status(ctx, errs.Err_UsernameOrPasswordErr)
 		}
 		slog.ErrorContext(ctx, "s.repo.UserRepo.FindOneUserByUsername", "username", req.Username, "err", err)
@@ -89,30 +92,36 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 		return nil, errs.Status(ctx, errs.Err_UserDeleting)
 	}
 
-	// 3. 校验密码
-	// 4. TODO 登录次数（防止被暴力破解），登录次数超过5次直接禁用
-	if !s.passwdVerifier.BcryptVerifyWithCount(ctx, string(user.Password), req.Password) {
+	// 4. 校验密码
+	if _, err := s.passwdVerifier.BcryptVerifyWithCount(ctx, string(user.Password), passwd); err != nil {
+		// 5. 登录次数（防止被暴力破解），登录次数超过5次直接禁用
+		if errors.Is(err, security.ErrPasswdLimit) {
+			s.repo.User.UpdateStatus(ctx, user.ID, int32(v1.UserStatus_banned))
+		} else {
+			slog.ErrorContext(ctx, "s.passwdVerifier.BcryptVerifyWithCount", "err", err)
+		}
 		return nil, errs.Status(ctx, errs.Err_UsernameOrPasswordErr)
 	}
 
-	// 5. 生成新token
+	// 7. 生成新token, 并更新token
 	accessToken, refreshToken, err := s.jwtHelper.Generate(ctx, &security.Claims{
-		UserID:   user.ID,
-		Username: user.Username,
-		Roles:    []string{strconv.Itoa(int(user.Role))},
+		RegisteredClaims: jwt.RegisteredClaims{Subject: user.Username},
+		Data: v1.UserTokenInfo{
+			UserId:   user.ID,
+			Username: user.Username,
+			Role:     v1.Role(user.Role),
+		},
 	})
 	if err != nil {
 		return nil, errs.Status(ctx, errs.Err_LoginFailed)
 	}
-
-	// 6. 重置token（同时只能一个地方登录），如果有
 
 	// 7. 更新登录日志
 	loginLog := &model.UserLoginSuccessLog{
 		UserID:            user.ID,
 		Username:          user.Username,
 		LoginTime:         time.Now(),
-		ClientIP:          "",
+		ClientIP:          "", // TODO 获取客户端IP
 		UserAgent:         nil,
 		LoginChannel:      0,
 		GeoLocation:       nil,
@@ -126,7 +135,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 	return &v1.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		TokenType:    "Bearer",
+		TokenType:    "Bearer", // TODO 获取登陆平台
 		ExpiresIn:    config.Cfg().Basic.Security.Jwt.AccessTokenExpired.TimeDuration().Microseconds(),
 	}, nil
 }
@@ -148,10 +157,10 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 	}
 
 	// 2. 对密码字段从密文转换成明文
-	ciphertext := security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey)
-	if err := ciphertext.Decrypt(request.Password); err != nil {
+	passwd, err := s.aesDecrypt(request.Password)
+	if err != nil {
 		slog.ErrorContext(ctx, "ciphertext.Decrypt",
-			"secret", security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey), // 脱敏打印
+			"secret", config.Cfg().Security.Ciphertext.CipherKey, // 自动脱敏打印
 			"password", request.Password,
 			"err", err,
 		)
@@ -159,7 +168,7 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 	}
 
 	// 3. 密码强度校验
-	if level, err := s.passwordStrength.Validate(string(ciphertext)); err != nil {
+	if level, err := s.passwordStrength.Validate(passwd); err != nil {
 		st, _ := status.New(codes.Code(errs.Err_InvalidPasswordFormat),
 			errs.GetErrorMessage(ctx, errs.Err_InvalidPasswordFormat)).
 			WithDetails(&v1.PasswordStrengthError{Level: int32(level)})
@@ -172,7 +181,8 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 	}
 
 	// 5. 密码字段加密
-	hashedPassword := ciphertext.BcryptHash()
+	hashedPassword := security.Ciphertext(passwd)
+	hashedPassword.BcryptHash()
 
 	// 6. 保存用户信息
 	user := &model.User{
@@ -200,11 +210,86 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 }
 
 func (s *AuthService) ResetPassword(ctx context.Context, request *v1.ResetPasswordRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, errs.Status(ctx, errs.Err_UserNotFound)
+
+	// 要求
+	// 1. 对密码字段从密文转换成明文 (新密码和旧密码)
+	// 2. 新旧密码不能相同
+	// 3. 新密码强度校验
+	// 4. 校验用户密码（旧密码）
+	// 5. 密码字段加密
+	// 6. 更新用户密码
+	// 7. 清空用户密码错误次数
+	// 8. 清空所有平台的token
+
+	// 1. 对密码字段从密文转换成明文 (新密码和旧密码)
+	cipherKey := config.Cfg().Security.Ciphertext.CipherKey
+	oloPasswd, err := s.aesDecrypt(request.OldPassword)
+	if err != nil {
+		slog.ErrorContext(ctx, "ciphertext.Decrypt", "secret", cipherKey, "old password", request.OldPassword, "err", err)
+		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
+	}
+	newPasswd, err := s.aesDecrypt(request.NewPassword)
+	if err != nil {
+		slog.ErrorContext(ctx, "ciphertext.Decrypt", "secret", cipherKey, "new password", request.NewPassword, "err", err)
+		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
+	}
+
+	// 2. 新旧密码不能相同
+	if oloPasswd == newPasswd {
+		return nil, errs.Status(ctx, errs.Err_NewPasswordSameAsOld)
+	}
+
+	// 3. 新密码强度校验
+	if level, err := s.passwordStrength.Validate(newPasswd); err != nil {
+		st, _ := status.New(codes.Code(errs.Err_InvalidPasswordFormat), errs.GetErrorMessage(ctx, errs.Err_InvalidPasswordFormat)).
+			WithDetails(&v1.PasswordStrengthError{Level: int32(level)})
+		return nil, st.Err()
+	}
+
+	// 4. 校验用户密码（旧密码）
+	user, err := s.repo.User.FindOneUserByUsername(ctx, request.Username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.Status(ctx, errs.Err_UserNotFound)
+		}
+		slog.ErrorContext(ctx, "s.repo.UserRepo.FindOneUserByUsername", "username", request.Username, "err", err)
+		return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	}
+	if !s.passwdVerifier.BcryptVerify(string(user.Password), oloPasswd) {
+		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
+	}
+
+	// 5. 密码字段加密
+	hashedPassword := security.Ciphertext(newPasswd)
+	hashedPassword.BcryptHash()
+
+	// 6. 更新用户密码
+	if err := s.repo.User.UpdatePassword(ctx, user.ID, string(hashedPassword)); err != nil {
+		slog.ErrorContext(ctx, "s.repo.UserRepo.UpdatePassword", "err", err, "user", user)
+		return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	}
+
+	// 7. TODO 清空用户密码错误次数
+	// if err := s.passwdVerifier.Clear(ctx, user.Username); err != nil {
+	// 	slog.ErrorContext(ctx, "s.passwdVerifier.Clear", "err", err, "user", user)
+	// 	return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	// }
+
+	// 8. 清空所有平台的token
+	if err := s.removeAllTokens(ctx, user.Username); err != nil {
+		slog.ErrorContext(ctx, "s.removeAllTokens", "err", err, "username", user.Username)
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 // 生成验证码
 func (s *AuthService) SendVerificationCode(ctx context.Context, _ *emptypb.Empty) (*v1.SendVerificationCodeResponse, error) {
+
+	// 要求
+	// 1. 生成验证码Key
+	// 2. 生成验证码图片
+
 	captchaKey, imgBase64, answer, err := s.b64c.Generate()
 	if err != nil {
 		slog.ErrorContext(ctx, "s.b64c.Generate()", "err", err)
@@ -218,11 +303,71 @@ func (s *AuthService) SendVerificationCode(ctx context.Context, _ *emptypb.Empty
 }
 
 func (s *AuthService) RefreshToken(ctx context.Context, request *v1.RefreshTokenRequest) (*v1.RefreshTokenResponse, error) {
-	return nil, errs.Status(ctx, errs.Err_UserNotFound)
+
+	// 要求
+	// 1. 校验并解析refreshToken， 获取 username， platform
+	// 2. 获取用户信息
+	// 3. 生成新的token，并更新token
+
+	// 1. 校验并解析refreshToken， 获取 username， platform
+	claims, jwtErr := s.jwtHelper.Parse(request.RefreshToken)
+	if jwtErr != nil {
+		var err error
+		switch {
+		case errors.Is(jwtErr, jwt.ErrTokenMalformed):
+			err = errs.Status(ctx, errs.Err_TokenMalformed)
+		case errors.Is(jwtErr, jwt.ErrTokenUnverifiable):
+			err = errs.Status(ctx, errs.Err_TokenUnverifiable)
+		case errors.Is(jwtErr, jwt.ErrTokenExpired):
+			err = errs.Status(ctx, errs.Err_TokenExpired)
+		case errors.Is(jwtErr, jwt.ErrTokenInvalidSubject):
+			err = errs.Status(ctx, errs.Err_TokenInvalidSubject)
+		default:
+			err = errs.Status(ctx, errs.Err_TokenUnverifiable)
+		}
+		slog.ErrorContext(ctx, "s.jwtHelper.Parse", "err", jwtErr)
+		return nil, err
+	}
+	// 2. 获取用户信息
+	user, err := s.repo.User.FindOneUserByUsername(ctx, claims.Subject)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errs.Status(ctx, errs.Err_UserNotFound)
+		}
+		slog.ErrorContext(ctx, "s.repo.UserRepo.FindOneUserByUsername", "username", claims.Subject, "err", err)
+		return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	}
+	// 3. 生成新的token，并更新token
+	accessToken, refreshToken, err := s.jwtHelper.Generate(ctx, &security.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{Subject: user.Username},
+		Data: v1.UserTokenInfo{
+			UserId:   user.ID,
+			Username: user.Username,
+			Role:     v1.Role(user.Role),
+		},
+	})
+	if err != nil {
+		slog.ErrorContext(ctx, "s.jwtHelper.Generate", "err", err)
+		return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	}
+	return &v1.RefreshTokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer", // TODO 获取登陆平台
+		ExpiresIn:    config.Cfg().Basic.Security.Jwt.AccessTokenExpired.TimeDuration().Microseconds(),
+	}, nil
 }
 
 func (s *AuthService) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, errs.Status(ctx, errs.Err_UserNotFound)
+	// 要求
+	// 1. 获取当前用户信息（username， platform）
+	// 2. 移除当前平台的token
+
+	if err := s.jwtHelper.RemoveToken(ctx, ""); err != nil {
+		slog.ErrorContext(ctx, "s.jwtHelper.RemoveToken", "err", err)
+		return nil, errs.Status(ctx, errs.Err_SystemBusy)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *AuthService) Deregister(ctx context.Context, request *v1.DeregisterRequest) (*emptypb.Empty, error) {
@@ -233,17 +378,18 @@ func (s *AuthService) Deregister(ctx context.Context, request *v1.DeregisterRequ
 	// 3. 更改用户状态为注销, 并添加注销请求记录
 	// 4. 注销用户的所有token
 
-	ciphertext := security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey)
-	if err := ciphertext.Decrypt(request.Password); err != nil {
+	// 1. 对密码字段从密文转换成明文
+	passwd, err := s.aesDecrypt(request.Password)
+	if err != nil {
 		slog.ErrorContext(ctx, "ciphertext.Decrypt",
-			"secret", security.Ciphertext(config.Cfg().Security.Ciphertext.CipherKey), // 脱敏打印
+			"secret", config.Cfg().Security.Ciphertext.CipherKey, // 自动脱敏打印
 			"password", request.Password,
 			"err", err,
 		)
 		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
 	}
 
-	// 验证用户密码
+	// 2.验证用户密码
 	user, err := s.repo.User.FindOneUserById(ctx, request.UserId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -252,22 +398,32 @@ func (s *AuthService) Deregister(ctx context.Context, request *v1.DeregisterRequ
 		slog.ErrorContext(ctx, "s.repo.UserRepo.FindOneUserById", "userId", request.UserId, "err", err)
 		return nil, errs.Status(ctx, errs.Err_SystemBusy)
 	}
-
-	if !s.passwdVerifier.BcryptVerify(string(user.Password), string(ciphertext)) {
+	if !s.passwdVerifier.BcryptVerify(string(user.Password), passwd) {
 		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
 	}
 
-	// 更改用户状态为注销
-	// 并添加注销请求记录
+	// 3. 更改用户状态为注销, 并添加注销请求记录
 	if err := s.repo.User.DeletedUser(ctx, request.UserId); err != nil {
 		slog.ErrorContext(ctx, "s.repo.UserRepo.DeleteUser", "userId", request.UserId, "err", err)
 		return nil, errs.Status(ctx, errs.Err_SystemBusy)
 	}
 
-	// 注销用户的所有token
-	if err = s.jwtHelper.RemoveToken(ctx, user.Username); err != nil {
+	// 4. 注销用户的所有token
+	if err = s.removeAllTokens(ctx, user.Username); err != nil {
 		slog.ErrorContext(ctx, "s.jwtHelper.Deregister", "username", user.Username, "err", err)
 		return nil, nil
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *AuthService) removeAllTokens(ctx context.Context, username string) error {
+	// TODO 获取多平台
+	return s.jwtHelper.RemoveToken(ctx, username)
+}
+
+func (s *AuthService) aesDecrypt(ciphertext string) (string, error) {
+	if config.Cfg().Security.Ciphertext.IsCiphertext { // 前端是否加密
+		return ucrypto.AESDecrypt(ciphertext, string(config.Cfg().Security.Ciphertext.CipherKey))
+	}
+	return ciphertext, nil
 }
