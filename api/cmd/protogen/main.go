@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	protoDir   = "proto"   // proto文件目录
-	pbDir      = "gen/go"  // 生成pb.go代码的目录
-	swaggerDir = "openapi" // swagger文档目录
+	protoDir   = "proto"       // proto文件目录
+	pbDir      = "gen/go"      // 生成pb.go代码的目录
+	swaggerDir = "gen/openapi" // swagger文档目录
 )
 
 // go run main.go <module_name>
@@ -136,7 +136,7 @@ func main() {
 		fmt.Printf("Command: protoc-go-inject-tag -remove_tag_comment -input=%s\n", pbPattern)
 		if err := injectCmd.Run(); err != nil {
 			fmt.Printf("Error injecting tags: %v\n", err)
-			os.Exit(1)
+			continue
 		}
 
 		fmt.Printf("%s tags injected successfully!\n", module)

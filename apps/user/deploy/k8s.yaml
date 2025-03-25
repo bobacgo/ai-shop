@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+      - name: user-service
+        image: user-service:latest
+        ports:
+        - containerPort: 9080
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+        env:
+        - name: APP_ENV
+          value: "production"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+          subPath: config.yaml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: user-service-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  clusterIP: None # 关键配置
+  selector:
+    app: user-service
+  ports:
+    - port: 80
+      targetPort: 9080

@@ -1,18 +1,49 @@
 package middleware
 
 import (
-	"log"
+	"bytes"
+	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
-// 日志中间件
-func LoggingMiddleware(next runtime.HandlerFunc) runtime.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
-		next(w, r, pathParams) // 调用下一个 HandlerFunc
-	}
+type logResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
 }
 
-// TODO 失败响应日志
+func (lrw *logResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
+}
+
+func (lrw *logResponseWriter) Unwrap() http.ResponseWriter {
+	return lrw.ResponseWriter
+}
+
+func newLogResponseWriter(w http.ResponseWriter) *logResponseWriter {
+	return &logResponseWriter{ResponseWriter: w}
+}
+
+func LoggingMiddleware(next runtime.HandlerFunc) runtime.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		lw := newLogResponseWriter(w)
+		slog.Info("Received request", "method", r.Method, "path", r.URL.Path)
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			slog.Error("Failed to read request body:", "err", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		clonedR := r.Clone(r.Context())
+		clonedR.Body = io.NopCloser(bytes.NewReader(body))
+
+		next(w, clonedR, pathParams)
+		if lw.statusCode != http.StatusOK {
+			slog.Error("Request failed", "method", r.Method, "path", r.URL.Path, "status_code", lw.statusCode, "body", string(body))
+		}
+	}
+}

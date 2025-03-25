@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -15,11 +17,15 @@ import (
 )
 
 const (
-	grpcServerEndpoint = "localhost:9080" // user服务的gRPC地址
+	grpcServerEndpoint = "user-service.default.svc.cluster.local" // user服务的gRPC地址
 	gatewayPort        = 8080
 )
 
 func main() {
+	// Initialize tracing and handle the tracer provider shutdown
+	stopTracing := initTracing()
+	defer stopTracing()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -31,7 +37,11 @@ func main() {
 	)
 
 	// 设置grpc连接选项
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`), // This sets the initial balancing policy.
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+	}
 
 	// 注册用户服务的HTTP处理器
 	if err := v1.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, grpcServerEndpoint, opts); err != nil {
@@ -44,7 +54,7 @@ func main() {
 		log.Fatalf("Failed to register merchant service handler: %v", err)
 	}
 	// 启动HTTP服务器
-	log.Printf("Server listening on port %d...", gatewayPort)
+	slog.Info("Server listening on ...", "port", gatewayPort)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", gatewayPort), mux); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

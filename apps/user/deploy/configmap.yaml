@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+data:
+  config.yaml: |
+    name: user-service
+    version: '1.0.0'
+    env: dev
+
+    server:
+      rpc:
+        addr: '0.0.0.0:9080'
+        timeout: 1s
+    security:
+      ciphertext:
+        isCiphertext: false
+        cipherKey: YpC5wIRf4ZuMvd4f
+      jwt:
+        secret: YpC5wIRf4ZuMvd4f
+        issuer: bobacgo
+        cacheKeyPrefix: "admin:login_token"
+    localCache:
+      maxSize: 512MB
+
+    # ====================================
+    # logger
+    logger:
+      level: debug
+      timeFormat: "2006-01-02 15:04:05.000"
+      filepath: './logs'
+      filenameSuffix: '2006-01-02-150405'
+      fileExtension: log
+      fileJsonEncoder: true
+      fileSizeMax: 10
+      fileAgeMax: 30
+      fileCompress: true
+
+    # ====================================
+    # db
+    db:
+      default:
+        driver: mysql
+        dryRun: false
+        source: root:123456@tcp(127.0.0.1:3306)/ai_shop_user?charset=utf8mb4&parseTime=True&loc=Local
+        slowThreshold: 1
+        maxLifeTime: 1
+        maxOpenConn: 100
+        maxIdleConn: 30
+
+    # ====================================
+    # redis
+    redis:
+      default:
+        addrs: ['127.0.0.1:6379']
+        db: 0
+        username:
+        password:
+        readTimeout: 1ms
+        writeTimeout: 1ms
+        poolSize: 50
+
+    # 业务相关
+    service:
+      errAttemptLimit: 5
+
+    # ====================================
+    # registry
+    registry:
+      addr: '127.0.0.1:2379'
