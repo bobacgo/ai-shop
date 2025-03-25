@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package cart;
+option go_package = "./cart/v1/errs";
+
+enum Err {
+    OK = 0;
+
+    // 系统错误
+    // ============= 10000000 - 10000009
+
+    // zh: 系统繁忙
+    // en: System busy
+    SystemBusy = 10000001;
+}

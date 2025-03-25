@@ -10,8 +10,8 @@ import (
 
 const (
 	protoDir   = "proto"   // proto文件目录
-	pbDir      = "pb"      // 生成pb.go代码的目录
-	swaggerDir = "swagger" // swagger文档目录
+	pbDir      = "gen/go"  // 生成pb.go代码的目录
+	swaggerDir = "openapi" // swagger文档目录
 )
 
 // go run main.go <module_name>

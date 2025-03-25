@@ -17,15 +17,6 @@ init:
 	go mod tidy
 	go install ./...
 
-
-# 默认构建所有 proto
-# 使用方式: make proto
-.PHONY: proto
-proto:
-	@echo "Generating all gRPC code..."
-	$(PROTOC) $(GO_OUT) $(PROTO_FILES)
-	@echo "All gRPC code generated successfully!"
-
 # 生成指定模块的proto代码和错误映射文件
 # 使用方式: make <module_name>
 .PHONY: user cart

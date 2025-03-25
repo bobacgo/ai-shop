@@ -68,85 +68,118 @@ type ErrorData struct {
 	Errors  map[int32]map[string]string
 }
 
-// go run main.go <module_name>
+// go run ./cmd/errgen/main.go user
 func main() {
-	// 检查命令行参数
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: go run main.go <module_name>")
+	// 从命令行参数获取模块名
+	if len(os.Args) < 2 {
+		fmt.Println("请指定要处理的模块名称，例如: go run ./cmd/errgen/main.go user")
 		os.Exit(1)
 	}
+	targetModule := os.Args[1]
 
-	// 获取模块名
-	moduleName := os.Args[1]
-
-	// 自动推导文件路径
-	protoPath := filepath.Join("proto", moduleName)
-
-	// 获取版本目录
-	versions, err := os.ReadDir(protoPath)
+	// 获取proto目录下的所有子目录作为模块
+	protoDir := "proto"
+	entries, err := os.ReadDir(protoDir)
 	if err != nil {
 		fmt.Printf("Error reading proto directory: %v\n", err)
-		os.Exit(1)
+		return
 	}
 
-	// 检查是否有版本目录
-	if len(versions) == 0 {
-		fmt.Printf("No version directories found in %s\n", protoPath)
-		os.Exit(1)
-	}
+	// 遍历处理每个模块目录
+	for _, entry := range entries {
+		// 跳过非目录和third_party目录
+		if !entry.IsDir() || entry.Name() == "third_party" {
+			continue
+		}
+		moduleName := entry.Name()
 
-	// 递归查找所有版本目录中的error.proto文件
-	for _, version := range versions {
-		if !version.IsDir() {
+		// 只处理指定的模块
+		if moduleName != targetModule {
 			continue
 		}
 
-		inputFile := filepath.Join(protoPath, version.Name(), "error.proto")
+		// 自动推导文件路径
+		protoPath := filepath.Join("proto", moduleName)
 
-		// 检查proto文件是否存在
-		if _, err := os.Stat(inputFile); os.IsNotExist(err) {
-			fmt.Printf("Error proto file not found in version %s: %s\n", version.Name(), inputFile)
-			continue
-		}
-
-		// 读取proto文件内容以获取go_package
-		protoContent, err := os.ReadFile(inputFile)
+		// 获取版本目录
+		versions, err := os.ReadDir(protoPath)
 		if err != nil {
-			fmt.Printf("Error reading proto file in version %s: %v\n", version.Name(), err)
+			fmt.Printf("Error reading proto directory: %v\n", err)
+			os.Exit(1)
+		}
+
+		// 检查是否有版本目录
+		if len(versions) == 0 {
+			fmt.Printf("No version directories found in %s\n", protoPath)
 			continue
 		}
 
-		// 解析go_package
-		goPackageRegex := regexp.MustCompile(`option\s+go_package\s*=\s*"([^"]+)";`)
-		matches := goPackageRegex.FindSubmatch(protoContent)
-		if len(matches) < 2 {
-			fmt.Printf("go_package option not found in proto file for version %s\n", version.Name())
-			continue
+		// 递归查找所有版本目录中的error.proto文件
+		for _, version := range versions {
+			if !version.IsDir() {
+				continue
+			}
+
+			// 查找*_error.proto文件
+			files, err := filepath.Glob(filepath.Join(protoPath, version.Name(), "*_error.proto"))
+			if err != nil {
+				fmt.Printf("Error finding error proto files in version %s: %v\n", version.Name(), err)
+				continue
+			}
+			if len(files) == 0 {
+				fmt.Printf("No error proto files found in version %s\n", version.Name())
+				continue
+			}
+
+			// 处理每个找到的error proto文件
+			for _, inputFile := range files {
+
+				// 检查proto文件是否存在
+				if _, err := os.Stat(inputFile); os.IsNotExist(err) {
+					fmt.Printf("Error proto file not found in version %s: %s\n", version.Name(), inputFile)
+					continue
+				}
+
+				// 读取proto文件内容以获取go_package
+				protoContent, err := os.ReadFile(inputFile)
+				if err != nil {
+					fmt.Printf("Error reading proto file in version %s: %v\n", version.Name(), err)
+					continue
+				}
+
+				// 解析go_package
+				goPackageRegex := regexp.MustCompile(`option\s+go_package\s*=\s*"([^"]+)";`)
+				matches := goPackageRegex.FindSubmatch(protoContent)
+				if len(matches) < 2 {
+					fmt.Printf("go_package option not found in proto file for version %s\n", version.Name())
+					continue
+				}
+
+				// 解析go_package路径
+				goPackage := strings.TrimPrefix(string(matches[1]), "./")
+
+				// 使用go_package来确定输出路径
+				outputFile := filepath.Join("gen/go", goPackage, "error_message.gen.go")
+
+				// 从go_package中提取包名
+				pkgName := filepath.Base(goPackage)
+
+				// 解析proto文件
+				errors, err := parseProtoFile(inputFile)
+				if err != nil {
+					fmt.Printf("Error parsing proto file in version %s: %v\n", version.Name(), err)
+					continue
+				}
+
+				// 生成Go文件
+				if err := generateGoFile(outputFile, pkgName, errors); err != nil {
+					fmt.Printf("Error generating Go file for version %s: %v\n", version.Name(), err)
+					continue
+				}
+
+				fmt.Printf("Successfully generated error messages for module %s version %s\n", moduleName, version.Name())
+			}
 		}
-
-		// 解析go_package路径
-		goPackage := strings.TrimPrefix(string(matches[1]), "./")
-
-		// 使用go_package来确定输出路径
-		outputFile := filepath.Join("pb", goPackage, "error_message.gen.go")
-
-		// 从go_package中提取包名
-		pkgName := filepath.Base(goPackage)
-
-		// 解析proto文件
-		errors, err := parseProtoFile(inputFile)
-		if err != nil {
-			fmt.Printf("Error parsing proto file in version %s: %v\n", version.Name(), err)
-			continue
-		}
-
-		// 生成Go文件
-		if err := generateGoFile(outputFile, pkgName, errors); err != nil {
-			fmt.Printf("Error generating Go file for version %s: %v\n", version.Name(), err)
-			continue
-		}
-
-		fmt.Printf("Successfully generated error messages for version %s\n", version.Name())
 	}
 }
 

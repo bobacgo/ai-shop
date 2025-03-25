@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.29.3
-// source: proto/user/v1/error.proto
+// source: proto/user/v1/user_error.proto
 
 package errs
 
@@ -128,11 +128,11 @@ func (x Err) String() string {
 }
 
 func (Err) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_user_v1_error_proto_enumTypes[0].Descriptor()
+	return file_proto_user_v1_user_error_proto_enumTypes[0].Descriptor()
 }
 
 func (Err) Type() protoreflect.EnumType {
-	return &file_proto_user_v1_error_proto_enumTypes[0]
+	return &file_proto_user_v1_user_error_proto_enumTypes[0]
 }
 
 func (x Err) Number() protoreflect.EnumNumber {
@@ -141,14 +141,14 @@ func (x Err) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Err.Descriptor instead.
 func (Err) EnumDescriptor() ([]byte, []int) {
-	return file_proto_user_v1_error_proto_rawDescGZIP(), []int{0}
+	return file_proto_user_v1_user_error_proto_rawDescGZIP(), []int{0}
 }
 
-var File_proto_user_v1_error_proto protoreflect.FileDescriptor
+var File_proto_user_v1_user_error_proto protoreflect.FileDescriptor
 
-const file_proto_user_v1_error_proto_rawDesc = "" +
+const file_proto_user_v1_user_error_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/user/v1/error.proto\x12\x04user*\x8d\x03\n" +
+	"\x1eproto/user/v1/user_error.proto\x12\x04user*\x8d\x03\n" +
 	"\x03Err\x12\x06\n" +
 	"\x02OK\x10\x00\x12\x11\n" +
 	"\n" +
@@ -171,22 +171,22 @@ const file_proto_user_v1_error_proto_rawDesc = "" +
 	"\x13TokenInvalidSubject\x10\xb9\xc9\xe3\x04B\x10Z\x0e./user/v1/errsb\x06proto3"
 
 var (
-	file_proto_user_v1_error_proto_rawDescOnce sync.Once
-	file_proto_user_v1_error_proto_rawDescData []byte
+	file_proto_user_v1_user_error_proto_rawDescOnce sync.Once
+	file_proto_user_v1_user_error_proto_rawDescData []byte
 )
 
-func file_proto_user_v1_error_proto_rawDescGZIP() []byte {
-	file_proto_user_v1_error_proto_rawDescOnce.Do(func() {
-		file_proto_user_v1_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_user_v1_error_proto_rawDesc), len(file_proto_user_v1_error_proto_rawDesc)))
+func file_proto_user_v1_user_error_proto_rawDescGZIP() []byte {
+	file_proto_user_v1_user_error_proto_rawDescOnce.Do(func() {
+		file_proto_user_v1_user_error_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_user_v1_user_error_proto_rawDesc), len(file_proto_user_v1_user_error_proto_rawDesc)))
 	})
-	return file_proto_user_v1_error_proto_rawDescData
+	return file_proto_user_v1_user_error_proto_rawDescData
 }
 
-var file_proto_user_v1_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_user_v1_error_proto_goTypes = []any{
+var file_proto_user_v1_user_error_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_proto_user_v1_user_error_proto_goTypes = []any{
 	(Err)(0), // 0: user.Err
 }
-var file_proto_user_v1_error_proto_depIdxs = []int32{
+var file_proto_user_v1_user_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -194,26 +194,26 @@ var file_proto_user_v1_error_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_user_v1_error_proto_init() }
-func file_proto_user_v1_error_proto_init() {
-	if File_proto_user_v1_error_proto != nil {
+func init() { file_proto_user_v1_user_error_proto_init() }
+func file_proto_user_v1_user_error_proto_init() {
+	if File_proto_user_v1_user_error_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_user_v1_error_proto_rawDesc), len(file_proto_user_v1_error_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_user_v1_user_error_proto_rawDesc), len(file_proto_user_v1_user_error_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_proto_user_v1_error_proto_goTypes,
-		DependencyIndexes: file_proto_user_v1_error_proto_depIdxs,
-		EnumInfos:         file_proto_user_v1_error_proto_enumTypes,
+		GoTypes:           file_proto_user_v1_user_error_proto_goTypes,
+		DependencyIndexes: file_proto_user_v1_user_error_proto_depIdxs,
+		EnumInfos:         file_proto_user_v1_user_error_proto_enumTypes,
 	}.Build()
-	File_proto_user_v1_error_proto = out.File
-	file_proto_user_v1_error_proto_goTypes = nil
-	file_proto_user_v1_error_proto_depIdxs = nil
+	File_proto_user_v1_user_error_proto = out.File
+	file_proto_user_v1_user_error_proto_goTypes = nil
+	file_proto_user_v1_user_error_proto_depIdxs = nil
 }
