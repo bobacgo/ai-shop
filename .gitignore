@@ -17,7 +17,6 @@
 # vendor/s
 **/logs
 .idea
-.vscode
 /*/polaris/
 
 /admin-service/web/

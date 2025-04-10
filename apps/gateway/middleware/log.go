@@ -7,16 +7,17 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc/codes"
 )
 
 type logResponseWriter struct {
 	http.ResponseWriter
-	statusCode int
+	statusCode codes.Code
 }
 
-func (lrw *logResponseWriter) WriteHeader(code int) {
+func (lrw *logResponseWriter) WriteHeader(code codes.Code) {
 	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
+	lrw.ResponseWriter.WriteHeader(int(code))
 }
 
 func (lrw *logResponseWriter) Unwrap() http.ResponseWriter {
@@ -42,7 +43,7 @@ func LoggingMiddleware(next runtime.HandlerFunc) runtime.HandlerFunc {
 		clonedR.Body = io.NopCloser(bytes.NewReader(body))
 
 		next(w, clonedR, pathParams)
-		if lw.statusCode != http.StatusOK {
+		if lw.statusCode != codes.OK {
 			slog.Error("Request failed", "method", r.Method, "path", r.URL.Path, "status_code", lw.statusCode, "body", string(body))
 		}
 	}

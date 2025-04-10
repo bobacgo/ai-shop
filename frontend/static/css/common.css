@@ -1,0 +1,75 @@
+/* 全局样式 Global styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* 按钮样式 Button styles */
+button {
+    padding: 10px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #ff6600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #e55d00;
+}
+
+/* 输入框样式 Input styles */
+input {
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* 链接样式 Link styles */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* 验证码容器样式 Captcha container styles */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.captcha-input {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+.captcha-image {
+    width: 120px;
+    height: 40px;
+    margin-left: 10px;
+    cursor: pointer;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+}
+
+/* 消息提示样式 Message styles */
+.message {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+.success {
+    color: #4caf50;
+}
+.error {
+    color: #f44336;
+}

@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	grpcServerEndpoint = "user-service.default.svc.cluster.local" // user服务的gRPC地址
+	grpcServerEndpoint = "localhost:9080" // user服务的gRPC地址
 	gatewayPort        = 8080
 )
 
@@ -43,6 +43,7 @@ func main() {
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 	}
 
+	// 创建反向代理
 	// 注册用户服务的HTTP处理器
 	if err := v1.RegisterAuthServiceHandlerFromEndpoint(ctx, mux, grpcServerEndpoint, opts); err != nil {
 		log.Fatalf("Failed to register auth service handler: %v", err)

@@ -33,8 +33,10 @@ type AuthService struct {
 }
 
 func NewAuthService(rdb redis.UniversalClient, r *repo.All) *AuthService {
+	ddd := base64Captcha.DefaultDriverDigit
+	ddd.Length = 6
 	return &AuthService{
-		b64c: base64Captcha.NewCaptcha(base64Captcha.DefaultDriverDigit, r.Captcha),
+		b64c: base64Captcha.NewCaptcha(ddd, r.Captcha),
 		// 密码强度: 大小写+数字、 len > 6
 		passwordStrength: security.NewPasswordValidator(6, true, true, true, false),
 		passwdVerifier:   security.NewPasswdVerifier(rdb, repo.PasswdErrLimitPrefixKey(), 0, int32(config.Cfg().Service.ErrAttemptLimit)),

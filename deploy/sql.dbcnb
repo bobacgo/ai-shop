@@ -1,0 +1,10 @@
+cells:
+  - kind: 2
+    languageId: sql
+    value: select * from users
+    metadata: {}
+metadata:
+  conn:
+    id: B5cJpLTkKVmxxNK7uxp7S
+    name: localhost
+  database: ai_shop_user
