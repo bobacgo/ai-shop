@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <style>
+        /* 注册页面特有样式 Register page specific styles */
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            padding: 30px;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            font-size: 22px;
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>用户注册</h2>
+        <form id="registerForm">
+            <input type="text" name="username" placeholder="用户名" required>
+            <input type="password" name="password" placeholder="密码" required>
+            <input type="password" name="confirmPassword" placeholder="确认密码" required>
+            <input type="email" name="email" placeholder="电子邮箱">
+            <input type="tel" name="phone" placeholder="手机号码">
+            <div class="captcha-container">
+                <input type="text" name="captcha" class="captcha-input" placeholder="请输入验证码" required>
+                <img src="/api/v1/auth/captcha" alt="验证码" class="captcha-image" title="点击刷新验证码"
+                    onclick="this.src='/v1/auth/captcha?t='+new Date().getTime()">
+            </div>
+            <button type="submit">注册</button>
+            <p id="registerMessage" class="message"></p>
+        </form>
+        <div class="links">
+            <a href="index.html">已有账号？立即登录</a>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后自动获取验证码
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取验证码
+            getCaptcha();
+
+            // 注册表单提交
+            const registerForm = document.getElementById('registerForm');
+            const registerMessage = document.getElementById('registerMessage');
+
+            registerForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(registerForm);
+                // 验证两次密码是否一致
+                if (formData.get('password') !== formData.get('confirmPassword')) {
+                    registerMessage.textContent = '两次输入的密码不一致';
+                    registerMessage.className = 'message error';
+                    return;
+                }
+
+                const registerData = {
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    verification_code: formData.get('captcha'),  // 修改字段名 captcha 为 verification_code
+                    verification_key: localStorage.getItem('verificationKey') // 添加验证码密钥
+                };
+
+                fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(registerData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 0) {
+                            // 注册成功
+                            registerMessage.textContent = '注册成功，3秒后跳转到登录页面...';
+                            registerMessage.className = 'message success';
+                            // 跳转到登录页
+                            setTimeout(() => window.location.href = 'index.html', 3000);
+                        } else {
+                            // 注册失败
+                            // 显示服务器返回的错误信息
+                            const errorMsg = data.message || data.msg || '注册失败，请重试';
+                            registerMessage.textContent = errorMsg;
+                            registerMessage.className = 'message error';
+                            // 刷新验证码
+                            getCaptcha();
+                        }
+                    })
+                    .catch(error => {
+                        registerMessage.textContent = '注册请求发生错误，请稍后再试';
+                        registerMessage.className = 'message error';
+                        console.error('注册请求错误:', error);
+                        // 刷新验证码
+                        getCaptcha();
+                    });
+            });
+            
+            // 获取验证码函数
+            function getCaptcha() {
+                fetch('/api/v1/auth/captcha')
+                    .then(response => response.json())
+                    .then(data => {
+                        // 保存验证码密钥和显示验证码图片
+                        localStorage.setItem('verificationKey', data.verificationKey);
+                        document.querySelector('.captcha-image').src = data.verificationImage;
+                    })
+                    .catch(error => {
+                        console.error('获取验证码失败:', error);
+                    });
+            }
+            
+            // 点击验证码图片刷新
+            document.querySelector('.captcha-image').addEventListener('click', function() {
+                getCaptcha();
+            });
+        });
+    </script>
+</body>
+
+</html>

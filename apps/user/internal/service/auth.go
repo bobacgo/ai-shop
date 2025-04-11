@@ -116,6 +116,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 		},
 	})
 	if err != nil {
+		slog.ErrorContext(ctx, "s.jwtHelper.Generate", "err", err)
 		return nil, errs.Status(ctx, errs.Err_LoginFailed)
 	}
 
@@ -173,8 +174,7 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 
 	// 3. 密码强度校验
 	if level, err := s.passwordStrength.Validate(passwd); err != nil {
-		st, _ := status.New(codes.Code(errs.Err_InvalidPasswordFormat),
-			errs.GetErrorMessage(ctx, errs.Err_InvalidPasswordFormat)).
+		st, _ := status.New(codes.Code(errs.Err_InvalidPasswordFormat), err.Error()).
 			WithDetails(&v1.PasswordStrengthError{Level: int32(level)})
 		return nil, st.Err()
 	}
