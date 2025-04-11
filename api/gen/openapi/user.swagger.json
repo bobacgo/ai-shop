@@ -186,7 +186,8 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/userLoginResponse"
+              "type": "object",
+              "properties": {}
             }
           },
           "default": {

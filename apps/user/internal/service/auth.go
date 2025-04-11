@@ -145,7 +145,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 }
 
 // Register 注册 (无需鉴权)
-func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest) (*v1.LoginResponse, error) {
+func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest) (*emptypb.Empty, error) {
 
 	// 要求
 	// 1. 校验验证码 (保留验证码登录可以继续使用)
@@ -154,7 +154,6 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 	// 4. 检验用户是否被占用（用户名，手机号， 邮箱号）（包括被禁用的和已注销的）
 	// 5. 密码字段加密
 	// 6. 保存用户信息
-	// 7. 登录并返回token
 
 	// 1. 校验验证码 (保留验证码登录可以继续使用)
 	if !s.b64c.Verify(request.VerificationKey, request.VerificationCode, false) {
@@ -204,13 +203,7 @@ func (s *AuthService) Register(ctx context.Context, request *v1.RegisterRequest)
 		return nil, errs.Status(ctx, errs.Err_SystemBusy)
 	}
 
-	// 7. 登录并返回token
-	return s.Login(ctx, &v1.LoginRequest{
-		Username:         request.Username,
-		Password:         request.Password,
-		VerificationCode: request.VerificationCode,
-		VerificationKey:  request.VerificationKey,
-	})
+	return &emptypb.Empty{}, nil
 }
 
 func (s *AuthService) ResetPassword(ctx context.Context, request *v1.ResetPasswordRequest) (*emptypb.Empty, error) {

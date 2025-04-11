@@ -17,7 +17,7 @@ service AuthService {
         };
     }
     // 注册并登录
-    rpc Register (RegisterRequest) returns (LoginResponse) {
+    rpc Register (RegisterRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/auth/register"
             body: "*"

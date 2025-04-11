@@ -100,13 +100,20 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.code === 0) {
-                        // 登录成功，保存token
-                        localStorage.setItem('token', data.data.token);
+                    if (!data.code) {
+                        // 登录成功，保存所有token相关信息
+                        // Login successful, save all token related information
+                        localStorage.setItem('accessToken', data.accessToken);
+                        localStorage.setItem('refreshToken', data.refreshToken);
+                        localStorage.setItem('tokenType', data.tokenType);
+                        localStorage.setItem('expiresIn', data.expiresIn);
+                        
                         loginMessage.textContent = '登录成功，正在跳转...';
                         loginMessage.className = 'message success';
+                        
                         // 跳转到首页
-                        setTimeout(() => window.location.href = '/', 1000);
+                        // Redirect to homepage
+                        setTimeout(() => window.location.href = '/index.html', 1000);
                     } else {
                         // 登录失败
                         // 显示服务器返回的错误信息

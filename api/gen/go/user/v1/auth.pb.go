@@ -569,10 +569,10 @@ const file_proto_user_v1_auth_proto_rawDesc = "" +
 	"expires_in\x18\x04 \x01(\x03R\texpiresIn\"H\n" +
 	"\x11DeregisterRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword2\xa3\x05\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword2\xa6\x05\n" +
 	"\vAuthService\x12K\n" +
-	"\x05Login\x12\x12.user.LoginRequest\x1a\x13.user.LoginResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/auth/login\x12T\n" +
-	"\bRegister\x12\x15.user.RegisterRequest\x1a\x13.user.LoginResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/register\x12g\n" +
+	"\x05Login\x12\x12.user.LoginRequest\x1a\x13.user.LoginResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/auth/login\x12W\n" +
+	"\bRegister\x12\x15.user.RegisterRequest\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/register\x12g\n" +
 	"\rResetPassword\x12\x1a.user.ResetPasswordRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/v1/auth/reset-password\x12l\n" +
 	"\x14SendVerificationCode\x12\x16.google.protobuf.Empty\x1a\".user.SendVerificationCodeResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/auth/captcha\x12h\n" +
 	"\fRefreshToken\x12\x19.user.RefreshTokenRequest\x1a\x1a.user.RefreshTokenResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/v1/auth/refresh-token\x12Q\n" +
@@ -613,7 +613,7 @@ var file_proto_user_v1_auth_proto_depIdxs = []int32{
 	8, // 5: user.AuthService.Logout:input_type -> google.protobuf.Empty
 	7, // 6: user.AuthService.Deregister:input_type -> user.DeregisterRequest
 	1, // 7: user.AuthService.Login:output_type -> user.LoginResponse
-	1, // 8: user.AuthService.Register:output_type -> user.LoginResponse
+	8, // 8: user.AuthService.Register:output_type -> google.protobuf.Empty
 	8, // 9: user.AuthService.ResetPassword:output_type -> google.protobuf.Empty
 	4, // 10: user.AuthService.SendVerificationCode:output_type -> user.SendVerificationCodeResponse
 	6, // 11: user.AuthService.RefreshToken:output_type -> user.RefreshTokenResponse
