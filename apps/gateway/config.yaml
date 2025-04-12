@@ -1,0 +1,53 @@
+name: gateway-service
+version: '1.0.0'
+env: dev
+
+gateway:
+  addr: ':8080'
+  readTimeout: 10s
+  writeTimeout: 10s
+  shutdownTimeout: 15s
+
+security:
+  jwt:
+    secret: YpC5wIRf4ZuMvd4f
+    issuer: bobacgo
+    cacheKeyPrefix: "admin:login_token"
+localCache:
+  maxSize: 512MB
+
+# ====================================
+# logger
+logger:
+  level: debug                          # 可选 debug | info | error
+  timeFormat: "2006-01-02 15:04:05.000"
+  filepath: './logs'
+  filenameSuffix: '2006-01-02-150405'
+  fileExtension: log
+  fileJsonEncoder: true
+  fileSizeMax: 10                      # 10MB 切割文件
+  fileAgeMax: 30                       # 日志保留30天
+  fileCompress: true
+
+# ====================================
+# redis
+redis:
+  # 1.集群模式，可以填写多个地址
+  # 2.单机模式，一个地址
+  default:
+    addrs: ['127.0.0.1:6379']
+    db: 0
+    username:
+    password:
+    readTimeout: 1ms
+    writeTimeout: 1ms
+    poolSize: 50
+
+# ====================================
+# registry
+registry:
+  addr: '127.0.0.1:2379'
+
+service:
+  endpoint:
+    userServer: localhost:9080

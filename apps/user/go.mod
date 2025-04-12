@@ -3,7 +3,7 @@ module github.com/bobacgo/ai-shop/user
 go 1.24.0
 
 require (
-	github.com/bobacgo/kit v0.1.3
+	github.com/bobacgo/kit v0.1.4
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12

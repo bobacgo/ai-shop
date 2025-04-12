@@ -39,7 +39,7 @@ func NewAuthService(rdb redis.UniversalClient, r *repo.All) *AuthService {
 		b64c: base64Captcha.NewCaptcha(ddd, r.Captcha),
 		// 密码强度: 大小写+数字、 len > 6
 		passwordStrength: security.NewPasswordValidator(6, true, true, true, false),
-		passwdVerifier:   security.NewPasswdVerifier(rdb, repo.PasswdErrLimitPrefixKey(), 0, int32(config.Cfg().Service.ErrAttemptLimit)),
+		passwdVerifier:   security.NewPasswdVerifier(rdb, 0, int32(config.Cfg().Service.ErrAttemptLimit)),
 		jwtHelper:        security.NewJWT(&config.Cfg().Security.Jwt, rdb),
 		repo:             r,
 	}
@@ -76,14 +76,14 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 		return nil, errs.Status(ctx, errs.Err_InvalidPassword)
 	}
 
+	pwdVerifier := s.pwdVerifier(ctx, req.Username)
+
 	// 3. 查询用户信息并检查状态
 	user, err := s.repo.User.FindOneUserByUsername(ctx, req.Username)
 	if err != nil {
 		// 用户名不存在
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			if err := s.passwdVerifier.Incr(ctx); err != nil {
-				slog.ErrorContext(ctx, "s.passwdVerifier.Incr", "err", err)
-			}
+			pwdVerifier.Incr(ctx)
 			return nil, errs.Status(ctx, errs.Err_UsernameOrPasswordErr)
 		}
 		slog.ErrorContext(ctx, "s.repo.UserRepo.FindOneUserByUsername", "username", req.Username, "err", err)
@@ -96,13 +96,7 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 	}
 
 	// 4. 校验密码
-	if _, err := s.passwdVerifier.BcryptVerifyWithCount(ctx, string(user.Password), passwd); err != nil {
-		// 5. 登录次数（防止被暴力破解），登录次数超过5次直接禁用
-		if errors.Is(err, security.ErrPasswdLimit) {
-			s.repo.User.UpdateStatus(ctx, user.ID, int32(v1.UserStatus_banned))
-		} else {
-			slog.ErrorContext(ctx, "s.passwdVerifier.BcryptVerifyWithCount", "err", err)
-		}
+	if !pwdVerifier.BcryptVerify(ctx, string(user.Password), passwd) {
 		return nil, errs.Status(ctx, errs.Err_UsernameOrPasswordErr)
 	}
 
@@ -424,4 +418,18 @@ func (s *AuthService) aesDecrypt(ciphertext string) (string, error) {
 		return ucrypto.AESDecrypt(ciphertext, string(config.Cfg().Security.Ciphertext.CipherKey))
 	}
 	return ciphertext, nil
+}
+
+func (s *AuthService) pwdVerifier(ctx context.Context, username string) security.PwdVerifier {
+	pwdVerifier := s.passwdVerifier.VerifierAndCount(repo.PasswdErrLimitPrefixKey(username))
+	pwdVerifier.OnErr = func(err error) {
+		if errors.Is(err, security.ErrPasswdLimit) {
+			// 登录次数超过5次直接禁用
+			if err := s.repo.User.UpdateStatus(ctx, username, int32(v1.UserStatus_banned)); err != nil {
+				slog.ErrorContext(ctx, "s.repo.UserRepo.UpdateStatus", "err", err)
+			}
+		}
+		slog.ErrorContext(ctx, "s.passwdVerifier.VerifierAndCount", "err", err)
+	}
+	return pwdVerifier
 }

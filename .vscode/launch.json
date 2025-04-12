@@ -22,13 +22,16 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceRoot}/apps/gateway",
-            "cwd": "${workspaceRoot}/apps/gateway",
+            "program": "${workspaceRoot}/apps/gateway/cmd/gateway/main.go",
+            "cwd": "${workspaceRoot}/apps/gateway/cmd/gateway",
             "env": {
                 "GO111MODULE": "on",
                 "GOPROXY": "https://goproxy.cn,direct"
             },
-            "args": []
+            "args": [
+                "--config",
+                "${workspaceRoot}/apps/gateway/config.yaml"
+            ]
         },
         {
             "name": "user",

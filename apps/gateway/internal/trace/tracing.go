@@ -1,4 +1,4 @@
-package main
+package trace
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // Initialize OpenTelemetry tracing and return a function to stop the tracer provider
-func initTracing() func() {
+func InitTracing() func() {
 	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
 	if err != nil {
 		log.Fatalf("failed to create stdout exporter: %v", err)

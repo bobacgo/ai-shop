@@ -13,6 +13,6 @@ func captchaKey(id string) string {
 	return fmt.Sprintf("%s:captcha:%s:string", config.Cfg().Name, id)
 }
 
-func PasswdErrLimitPrefixKey() string {
-	return config.Cfg().Name + ":passwd_err_limit:%s:string"
+func PasswdErrLimitPrefixKey(username string) string {
+	return fmt.Sprintf("%s:passwd_err_limit:%s:string", config.Cfg().Name, username)
 }
