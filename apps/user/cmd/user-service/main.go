@@ -22,6 +22,7 @@ func init() {
 
 func main() {
 	newApp := app.New[config.Service](*filepath,
+		app.WithTracerServer(),
 		app.WithMustDB(),
 		app.WithMustRedis(),
 		app.WithGrpcServer(server.GrpcRegisterServer),

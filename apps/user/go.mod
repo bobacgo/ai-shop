@@ -3,7 +3,7 @@ module github.com/bobacgo/ai-shop/user
 go 1.24.0
 
 require (
-	github.com/bobacgo/kit v0.1.4
+	github.com/bobacgo/kit v0.1.6
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.12
@@ -60,7 +60,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/redis/go-redis/v9 v9.7.1 // indirect
+	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sony/sonyflake v1.2.0 // indirect

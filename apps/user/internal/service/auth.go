@@ -130,6 +130,8 @@ func (s *AuthService) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 		slog.ErrorContext(ctx, "s.repo.UserLoginSuccessLog.InsertUserLoginSuccessLog", "err", err, "loginLog", loginLog)
 	}
 
+	slog.DebugContext(ctx, "Login Success", "username", user.Username)
+
 	return &v1.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

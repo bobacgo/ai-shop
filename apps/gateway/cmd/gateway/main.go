@@ -25,16 +25,12 @@ func init() {
 }
 
 func main() {
-	// Initialize tracing and handle the tracer provider shutdown
-	// stopTracing := trace.InitTracing()
-	// defer stopTracing()
-
 	newApp := app.New[config.Service](*filepath,
+		app.WithTracerServer(),
 		app.WithMustRedis(),
 		app.WithGatewayServer(register.Handler,
 			runtime.WithMiddlewares(middleware.Middlewares...),
 			runtime.WithMetadata(metadata.HeaderToMD),
-			runtime.WithErrorHandler(runtime.DefaultHTTPErrorHandler),
 		),
 	)
 	if err := newApp.Run(); err != nil {
